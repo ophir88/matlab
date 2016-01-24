@@ -1,8 +1,8 @@
 close all;
-
+clear;
 % ==== Load image ====.
 img = imread('photos/plant.jpg');
-img = imresize(img, 0.5);
+img = imresize(img, 0.1);
 
 % ==== Get Luminance channel====.
 imgYCB = rgb2ycbcr(img);
@@ -29,13 +29,76 @@ for i = 1: maxLabel
     
 end
 % transform the image back to doubles.
-segmentedImg =  double(segmentedImg) + 1;
-segmentedImg = segmentedImg/10;
-figure;
-imshow(segmentedImg);
+% segmentedImg =  double(segmentedImg) + 1;
+% segmentedImg = segmentedImg/10;
+% figure;
+% imshow(segmentedImg);
 
 %  ==== Optimal zone estimation ====.
 
+% Detection of visible details:
+highG = 2.2;
+lowG = 1 / highG;
+imgYD = double(imgY) / 255;
+imgHighG = imgYD.^highG;
+imgLowG = imgYD.^lowG;
+
+imgHighGEdge = edge(imgHighG,'canny');
+imgLowGEdge = edge(imgLowG,'canny');
+imgOriginalEdge = edge(imgYD,'canny');
+shadowEdges = imgLowGEdge - imgLowGEdge.*imgHighGEdge;
+HighlightEdges = imgHighGEdge - imgLowGEdge.*imgHighGEdge;
+allEdges = imgHighGEdge + imgLowGEdge + imgOriginalEdge;
+visibilityShadow = sum(1,10);
+visibilityHighlight = zeros(1,10);
+for i = 1 : 10
+    visibilityAll = sum(sum(allEdges((segmentedImg==i-1))));
+    if (visibilityAll > 0 )
+        visibilityShadow(1,i) = sum(sum(shadowEdges(segmentedImg==i-1))) / visibilityAll;
+        visibilityHighlight(1,i) = sum(sum(HighlightEdges(segmentedImg==i-1))) / visibilityAll;
+    else
+        visibilityShadow(1,i) = 0;
+        visibilityHighlight(1,i) = 0;
+    end
+end
+
+% Measure of relative contrast:
+relativeContrast = zeros(10,10);
+for i = 1 : 10
+    currentHistogram = histcounts(imgYD(segmentedImg==i-1), 50);
+    for j = 1 : 10
+        compareHistogram = histcounts(imgYD(segmentedImg==j-1), 50);
+        max = 0;
+        maxIndex = 0;
+        for distance = 0 : 50
+           shiftedCompare = circshift(compareHistogram,[0,distance]);
+           intersection = sum(currentHistogram .* shiftedCompare);
+           if (intersection > max)
+               max = intersection;
+               maxIndex = distance;
+           end
+        end
+        relativeContrast(i,j) = maxIndex;
+    end
+end
+
+[rows,cols,d] = size(segmentedImg);
+imgSize = rows * cols;
+% MRF minimization:
+% create data terms:
+dataTerms = zeros(1,10);
+for i = 1: 10
+    P = 0;
+    if (i < 6 )
+      regionSize = sum(sum(find(segmentedImg == i-1))) / imgSize;
+      P = visibilityShadow(1,i); 
+    else
+        
+    end
+    
+%     dataTerms(1,i) = 
+end
 's';
+
 
 
