@@ -1,3 +1,7 @@
+
+
+
+
 close all;
 clear;
 % ==== Load image ====.
@@ -89,7 +93,7 @@ imgSize = rows * cols;
 dataTerms = zeros(1,10);
 for i = 1: 10
     P = 0;
-    if (i < 6 )
+    if (i < 5 )
       regionSize = sum(sum(find(segmentedImg == i-1))) / imgSize;
       P = visibilityShadow(1,i); 
     else
@@ -98,6 +102,8 @@ for i = 1: 10
     
 %     dataTerms(1,i) = 
 end
+
+
 's';
 
 
