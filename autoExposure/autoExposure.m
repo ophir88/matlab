@@ -1,7 +1,6 @@
 
 
 
-
 close all;
 clear;
 % ==== Load image ====.
@@ -88,23 +87,40 @@ end
 
 [rows,cols,d] = size(segmentedImg);
 imgSize = rows * cols;
-% MRF minimization:
+
+% ==== MRF minimization ====:
+numRegions = 10;
+numZones = 10;
+graph = GCO_Create(numRegions,numZones); 
 % create data terms:
-dataTerms = zeros(1,10);
+dataTerms = zeros(10,10);
 for i = 1: 10
-    P = 0;
-    if (i < 5 )
-      regionSize = sum(sum(find(segmentedImg == i-1))) / imgSize;
-      P = visibilityShadow(1,i); 
-    else
-        
+    regionSize = sum(sum(find(segmentedImg == i-1))) / imgSize;
+    visibility = visibilityShadow(1,i);
+    for j = 1: 10
+        zoneCost = 0;
+        if (i < 5 )     
+            zoneCost = 1/(1+ exp(-(j-i)));
+        else
+            zoneCost = 1/(1+ exp(-(i-j)));
+        end
+        dataTerms(i,j) = -log(regionSize * visibility * zoneCost);
     end
-    
-%     dataTerms(1,i) = 
 end
+GCO_SetDataCost(graph,dataTerms);
+% create pairwise terms:
+%  pairwise a #labels by #labels matrix where Sc(l1, l2)
+%             is the cost of assigning neighboring pixels with label1 and
+%             label2. This cost is spatialy invariant
+pairwise = zeros(10,10);
+var = 0.15;
+mean = 0;
 
-
+for i = 1: 10
+    for j = 1: 10
+        regionSize = sum(sum(find(segmentedImg == j-1))) / imgSize;
+        contrast = relativeContrast(i,j)
+        pairwise(i,j) =1 ;
+    end
+end
 's';
-
-
-
