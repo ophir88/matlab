@@ -35,8 +35,8 @@ for i = 0: maxLabel
         value = ceil(mean(mean(imgY(indexs))));
         segmentedImg(indexs) = lut(1,value);
     end
-    
 end
+
 % transform the image back to doubles.
 % segmentedImgd =  double(segmentedImg) + 1;
 % segmentedImgd = segmentedImgd/10;
@@ -86,6 +86,9 @@ for i = 1 : 10
                maxContr = intersection;
                maxIndex = distance;
            end
+        end
+        if (maxIndex > 25 )
+                maxIndex = abs(50 - maxIndex);
         end
         relativeContrast(i,j) = maxIndex;
     end
@@ -147,24 +150,60 @@ for e = 1:nEdges
                     maxIndex = distance;
                 end
             end
-            newContrast = maxIndex;
+            if (maxIndex > 25 )
+                newContrast = abs(50 - maxIndex);
+            else
+                newContrast = maxIndex;
+            end
             regionSize = sum(sum(find(segmentedImg == n2))) / imgSize;
             gaussVal = gauss(newContrast - currentContrast,0,0.15);
+            if (regionSize * gaussVal == 0)
+                's';
+            end
             edgePot(s1,s2,e) = -log(regionSize * gaussVal);
         end
     end
 end
 
+adjustments = [0 1 ; 1 3 ; 1 3 ; 1 3 ; 0 0 ; 1 3 ; 1 3 ; 1 3 ; 1 3 ; 0 1];
+signs = [1 ; 1 ; 1 ; 1 ; 1 ; -1 ; -1 ; -1 ; -1 ; -1];
 
-ising = 0; % Use full potentials
-tied = 0; % Each node/edge has its own parameters
-[nodeMap,edgeMap] = UGM_makeMRFmaps(nNodes,edgeStruct,ising,tied);
-nParams = max([nodeMap(:);edgeMap(:)]);
-w = zeros(nParams,1);
-[nodePot1,edgePot1] = UGM_MRF_makePotentials(w,nodeMap,edgeMap,edgeStruct);
-suffStat = UGM_MRF_computeSuffStat(segmentedImg,nodeMap,edgeMap,edgeStruct);
-% nll = UGM_MRF_NLL(w,rows,suffStat,nodeMap,edgeMap,edgeStruct,@UGM_Infer_Chain)
-w = minFunc(@UGM_MRF_NLL,w,[],rows,suffStat,nodeMap,edgeMap,edgeStruct,@UGM_Infer_Chain)
-[nodePot,edgePot] = UGM_MRF_makePotentials(w,nodeMap,edgeMap,edgeStruct);
+finalResults = zeros(10,1);
+minEnergy = 1000;
+for a = adjustments(1,1) : adjustments(1,2)
+    for b = adjustments(2,1) : adjustments(2,2)
+        for c = adjustments(3,1) : adjustments(3,2)
+            for d = adjustments(4,1) : adjustments(4,2)
+                for f = adjustments(6,1) : adjustments(6,2)
+                    for g = adjustments(7,1) : adjustments(7,2)
+                        for h = adjustments(8,1) : adjustments(8,2)
+                            for i = adjustments(9,1) : adjustments(9,2)
+                                for j = adjustments(10,1) : adjustments(10,2)
+                                    sumContrast = 0;
+                                    sumNode = 0;
+                                    currentAddition = [a ;b ;c ; d; 0 ; f ; g; h ; i ; j];
+                                    for e = 1 : nEdges
+                                        n1 = edgeStruct.edgeEnds(e,1);
+                                        n2 = edgeStruct.edgeEnds(e,2);
+                                        sumContrast = sumContrast + edgePot(n1+currentAddition(n1)*signs(n1),n2 +currentAddition(n2)*signs(n2), e);
+                                    end
+                                    for n = 1 : 10
+                                        sumNode = sumNode +  nodePot(n,n + currentAddition(n)*signs(n));
+                                    end
+                                    currentEnergy = sumContrast + sumNode;
+                                    
+                                    if (currentEnergy < minEnergy)
+                                        minEnergy = currentEnergy;
+                                        finalResults = currentAddition.*signs;
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
 
 's';
