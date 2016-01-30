@@ -2,9 +2,9 @@
 close all;
 clear;
 % ==== Load image ====.
-img = imread('photos/plant.jpg');
-imgOrigin = imresize(img, 0.3);
-img = imresize(img, 0.1);
+img = imread('photos/img3.jpg');
+imgOrigin = imresize(img, 1);
+img = imresize(img, 1);
 
 % ==== Get Luminance channel====.
 imgYCB = rgb2ycbcr(img);
@@ -37,10 +37,10 @@ for i = 0: maxLabel
 end
 
 % transform the image back to doubles.
-% segmentedImgd =  double(segmentedImg) + 1;
-% segmentedImgd = segmentedImgd/10;
-% figure;
-% imshow(segmentedImgd);
+segmentedImgd =  double(segmentedImg) + 1;
+segmentedImgd = segmentedImgd/10;
+figure;
+imshow(segmentedImgd);
 
 %  ==== Optimal zone estimation ====.
 
@@ -167,7 +167,7 @@ for e = 1:nEdges
     end
 end
 gamaWeight = nodePotTotal / edgePotTotal;
-adjustments = [0 1 ; 1 3 ; 1 3 ; 1 3 ; 1 2 ;0 0 ; 1 3 ; 1 3 ;1 3 ; 1 3 ; 0 1];
+adjustments = [0 0 ; 0 1 ; 1 2 ; 1 3 ; 1 1 ;0 0 ; 0 1 ; 0 1 ;0 2 ; 0 1 ; 0 0];
 signs = [1 ; 1 ; 1 ; 1 ; 1 ; 1; -1 ; -1 ; -1 ; -1 ; -1];
 
 finalResults = zeros(10,1);
@@ -215,10 +215,10 @@ end
 % calculate the s-curve shadow ammount for each region:
 %  (e - e') * c * fd
 [shadow, highlight] = shadowAndHighlight(imgYD,segmentedImg,11,  finalResults);
-% curve = 0:1/255:1;
-% curve = double(curve);
-% curve = sCruveImg(curve , shadow, highlight);
-% plot(curve);
+curve = 0:1/255:1;
+curve = double(curve);
+curve = sCruveImg(curve , shadow, highlight);
+figure;plot(curve);
 % ==== Get Luminance channel====.
 imgOriginD = im2double(imgOrigin);
 imgOriginYCB = rgb2ntsc(imgOriginD);
@@ -231,16 +231,19 @@ detailImage = imgOriginD - filteredImg;
 
 imgOriginYCB1 = imgOriginYCB;
 imgOriginYCB(:,:,1) = sCruveImg(imgOriginYCB(:,:,1) , shadow, highlight);
-% imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , shadow/4, highlight/4);
-% imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , shadow/4, highlight/4);
+imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , shadow/2, highlight/2);
+imgOriginYCB(:,:,3) = sCruveImg(imgOriginYCB(:,:,3) , shadow/2, highlight/2);
 
 finalResult = ntsc2rgb(imgOriginYCB);
-finalResult = finalResult + (2 * finalResult.*(1 - finalResult)).*filteredImg;
-subplot(1,2,1);
+finalResult = finalResult + (finalResult.*(1 - finalResult)).*filteredImg;
+figure;
+subplot(2,2,1);
 imshow(imgOriginD);
-subplot(1,2,2);
+subplot(2,2,2);
 imshow(finalResult);
-
+naiveExpo = imgOriginD * 2^(5/10);
+subplot(2,2,3);
+imshow(naiveExpo);
 
 
 's';
