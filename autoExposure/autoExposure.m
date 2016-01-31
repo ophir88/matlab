@@ -2,9 +2,9 @@
 close all;
 clear;
 % ==== Load image ====.
-img = imread('photos/img3.jpg');
+img = imread('photos/img1.jpg');
 imgOrigin = imresize(img, 1);
-img = imresize(img, 1);
+img = imresize(img, 0.4);
 
 % ==== Get Luminance channel====.
 imgYCB = rgb2ycbcr(img);
@@ -129,6 +129,7 @@ end
 % Make (non-negative) potential of each edge taking each state combination
 edgePot = zeros(maxState,maxState,edgeStruct.nEdges);
 edgePotTotal = 0;
+epsilon = .00001;
 for e = 1:nEdges
     n1 = edgeStruct.edgeEnds(e,1);
     n2 = edgeStruct.edgeEnds(e,2);
@@ -159,10 +160,11 @@ for e = 1:nEdges
             regionSize = sum(sum(segmentedImg == n2-1)) / imgSize;
             gaussVal = gauss(newContrast - currentContrast,0,0.15);
             if (regionSize * gaussVal == 0)
-                's';
-            end
+             edgePot(s1,s2,e) = -log(epsilon);
+            else
             edgePot(s1,s2,e) = -log(regionSize * gaussVal);
-            edgePotTotal = edgePotTotal + -log(regionSize * gaussVal);
+            end
+            edgePotTotal = edgePotTotal + edgePot(s1,s2,e);
         end
     end
 end
@@ -218,6 +220,7 @@ end
 curve = 0:1/255:1;
 curve = double(curve);
 curve = sCruveImg(curve , shadow, highlight);
+
 figure;plot(curve);
 % ==== Get Luminance channel====.
 imgOriginD = im2double(imgOrigin);
