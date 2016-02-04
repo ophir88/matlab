@@ -14,14 +14,19 @@ highlight = zeros(numOfZones,1);
 for i = 1 : numOfZones
     region = img(find(segmentedImg == i - 1));
     regionSize = sum(sum(segmentedImg == i - 1));
-
-    meanPre = sum(region)/regionSize;
+    if (regionSize > 0)
+        meanPre = sum(region)/regionSize;
     meanPost = sum(region * 2^(newE(i)/10))/regionSize;
     eDiff = meanPost - meanPre;
     fdValuesShadow = fd(img(find(segmentedImg == i - 1)));
     fdValuesHighlight = fd(1 - img(find(segmentedImg == i - 1)));
     shadow(i) = eDiff * regionSize / sum(fdValuesShadow);
     highlight(i) = eDiff * regionSize / sum( fdValuesHighlight);
+    else
+        shadow(i) = 0;
+    highlight(i) = 0;
+    end
+    
 end
 shadow = sum(shadow(1:6))/4;
 highlight = sum(highlight(7:11))/5;

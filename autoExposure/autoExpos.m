@@ -1,11 +1,17 @@
-close all;
-clear;
+function [ finalResult ] = autoExpos( img )
+%AUTOEXPOS Summary of this function goes here
+%   Detailed explanation goes here
+
+fprintf('started autoExpo calculation')
+
 
 % ==== Load image ====.
-img = imread('photos/img2.jpg');
+[R,C,d] = size(img);
+maxSize = max(R,C);
+aspect = maxSize / 400;
 tStart = tic;  % TIC, pair 2  
-imgOrigin = imresize(img, 1);
-img = imresize(img, 0.3);
+imgOrigin = img;
+img = imresize(img, 1/ aspect);
 
 % ==== Get Luminance channel====.
 imgYCB = rgb2ycbcr(img);
@@ -38,10 +44,10 @@ for i = 0: maxLabel
 end
 
 % transform the image back to doubles.
-segmentedImgd =  double(segmentedImg) + 1;
-segmentedImgd = segmentedImgd/10;
-figure;
-imshow(segmentedImgd);
+% segmentedImgd =  double(segmentedImg) + 1;
+% segmentedImgd = segmentedImgd/10;
+% figure;
+% imshow(segmentedImgd);
 [rows,cols,d] = size(segmentedImg);
 imgSize = rows * cols;
 
@@ -78,11 +84,6 @@ for i = 1 : 11
 end
 
 epsilon = .00001;
-
-
-tElapsed = toc(tStart);  
-fprintf('elapsed time after node calc is: %.2f seconds. \n',tElapsed')
-
 
 % % %  Without Edge pot:
 
@@ -126,7 +127,7 @@ end
 [shadow, highlight] = shadowAndHighlight(imgYD,segmentedImg,11,  finalResults);
 
 tElapsed = toc(tStart);  
-fprintf('elapsed time after estimation with node calculation is: %.2f seconds. \n',tElapsed')
+fprintf('calculated the curve in : %.2f seconds. \n',tElapsed')
 % curve = 0:1/255:1;
 % curve = double(curve);
 % curve = sCruveImg(curve , shadow, highlight);
@@ -142,26 +143,25 @@ filteredImg = imguidedfilter(imgOriginD,'NeighborhoodSize',[radius radius]);
 detailImage = imgOriginD - filteredImg;
 
 
-imgOriginYCB1 = imgOriginYCB;
 imgOriginYCB(:,:,1) = sCruveImg(imgOriginYCB(:,:,1) , shadow, highlight);
-tElapsed = toc(tStart);  
-fprintf('total time for node : %.2f seconds. \n',tElapsed')
-imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , shadow/5, highlight/5);
-imgOriginYCB(:,:,3) = sCruveImg(imgOriginYCB(:,:,3) , shadow/5, highlight/5);
+imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , shadow/8, highlight/8);
+imgOriginYCB(:,:,3) = sCruveImg(imgOriginYCB(:,:,3) , shadow/8, highlight/8);
 
 finalResult = ntsc2rgb(imgOriginYCB);
 finalResult = finalResult + (finalResult.*(1 - finalResult)).*detailImage;
-figure;
-subplot(2,2,1);
-imshow(imgOriginD);
-subplot(2,2,2);
-imshow(finalResult);
-naiveExpo = imgOriginD * 2^(5/10);
-subplot(2,2,3);
-imshow(naiveExpo);
+% figure;
+% subplot(2,2,1);
+% imshow(imgOriginD);
+% subplot(2,2,2);
+% imshow(finalResult);
+% naiveExpo = imgOriginD * 2^(5/10);
+% subplot(2,2,3);
+% imshow(naiveExpo);
 tElapsed = toc(tStart);  
-fprintf('total time for node : %.2f seconds. \n',tElapsed')
+fprintf('total time for img : %.2f seconds. \n',tElapsed')
 
 
 
 's';
+end
+
