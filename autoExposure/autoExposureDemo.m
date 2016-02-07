@@ -1,18 +1,24 @@
 imgs = loadImages('./photos');
+
 close all;
 for i = 1 : length(imgs)
    img = imgs{i};
    imgResult = autoExpos(img);
+   imgExposed = img * 2 ^(0.3);
     fig = figure;
-    subplot(1,2,1);
+    subplot(1,3,1);
     imshow(img);
     title('Original');
-    subplot(1,2,2);
+    subplot(1,3,3);
     imshow(imgResult);
     title('Result');
-    name = ['result' num2str(i)];
+        subplot(1,3,2);
 
-    print(fig,name,'-dpng')
+     imshow(imgExposed);
+    title('Naive exposure');
+%     name = ['result' num2str(i)];
+% 
+%     print(fig,name,'-dpng')
 
 end
 's';

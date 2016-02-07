@@ -118,7 +118,9 @@ for n = 1:nNodes
     end
 end
 finalResults = zeros(11,1);
-for n = 1 : 11    
+[val, I] = min(nodePot(1,1:4));
+finalResults(1,1) = I-1;
+for n = 2 : 11    
     if(relativeRegionSize(n,1) > 0 && sum(nodePot(n,:)) > 0)
     if n < 6
         [val, I] = min(nodePot(n,1:6));
@@ -149,12 +151,12 @@ filteredImg = imguidedfilter(imgOriginD,'NeighborhoodSize',[radius radius]);
 
 detailImage = imgOriginD - filteredImg;
 
-imgOriginYCB(:,:,1) = sCruveImg(imgOriginYCB(:,:,1) , shadow1, highlight1);
-imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , shadow1/8, highlight1/8);
-imgOriginYCB(:,:,3) = sCruveImg(imgOriginYCB(:,:,3) , shadow1/8, highlight1/8);
+imgOriginYCB(:,:,1) = sCruveImg(imgOriginYCB(:,:,1) , shadow, highlight);
+imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , shadow/8, highlight/8);
+imgOriginYCB(:,:,3) = sCruveImg(imgOriginYCB(:,:,3) , shadow/8, highlight/8);
 
 finalResult1 = ntsc2rgb(imgOriginYCB);
-finalResult1 = finalResult1 + (finalResult1.*(1 - finalResult1)).*detailImage;
+finalResult1 = finalResult1 + (2*finalResult1.*(1 - finalResult1)).*detailImage;
 finalResult = finalResult1;
 tElapsed = toc(tStart);  
 fprintf('total time for img : %.2f seconds. \n',tElapsed')
