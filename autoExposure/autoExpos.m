@@ -42,6 +42,9 @@ for i = 0: maxLabel
     numOfInd = sum(sum(indexs));
     if(numOfInd > 0 )
         value = ceil(mean(mean(imgY(indexs))));
+        if (value == 0)
+            value = 1;
+        end
         segmentedImg(indexs) = lut(1,value);
     end
 end
@@ -139,7 +142,7 @@ tElapsed = toc(tStart);
 fprintf('calculated the curve in : %.2f seconds. \n',tElapsed')
 % curve = 0:1/255:1;
 % curve = double(curve);
-% curve = sCruveImg(curve , shadow, highlight)
+% curve = sCruveImg(curve , shadow, highlight);
 % figure;plot(curve);
 
 % ==== Get Luminance channel====.
