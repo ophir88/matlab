@@ -7,7 +7,7 @@ function [ finalResult ] = autoExpos( img )
 % img - input img.
 % finalResult - fixed img.
 
-fprintf('started autoExpo calculation')
+fprintf('started autoExpo calculation \n')
 
 % ==== Load image ====.
 [R,C,d] = size(img);

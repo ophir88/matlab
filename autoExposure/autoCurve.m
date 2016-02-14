@@ -13,9 +13,14 @@ img = imresize(img, 1/ aspect);
 imgYCB = rgb2ycbcr(img);
 imgY = imgYCB(:,:,1);
 [J, T] = histeq(imgY);
+
+% [pixelCounts, grayLevels] = imhist(imgY);
+% cdf = cumsum(pixelCounts); % Make transfer function (look up table).
+% cdf = cdf / sum(cdf); % Normalize
+% plot(grayLevels, cdf, 'b-');
 % T = round(T * 255);
 
-figure; plot(T);
+% figure; plot(T);
 % figure; imshow(imgY);
 % figure; imshow(J);
 Icurve = 0:1/255:1;
