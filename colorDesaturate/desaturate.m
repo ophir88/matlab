@@ -22,7 +22,7 @@ function varargout = desaturate(varargin)
 
 % Edit the above text to modify the response to help desaturate
 
-% Last Modified by GUIDE v2.5 15-Feb-2016 00:32:38
+% Last Modified by GUIDE v2.5 16-Feb-2016 20:04:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,12 +52,15 @@ function desaturate_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % var2rgin   command line arguments to desaturate (see VARARGIN)
 
-image = (imread('./photos/nature.jpg'));
+image = (imread('./photos/port.jpg'));
 [R,C,d] = size(image);
 maxSize = max(R,C);
 aspect = maxSize / 500;
 handles.image = imresize(image, 1/ aspect);
-handles.current_data = desaturateForAngle(handles.image, 0);
+colors = mainColors(handles.image);
+handles.current_data = desaturateForAngle(handles.image, colors(1,1)*10, colors(2,1));
+handles.colors = colors;
+handles.currentColor = 1;
 imshow(handles.current_data);
 
 % Choose default command line output for desaturate
@@ -128,20 +131,34 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function[output] = desaturateForAngle(img,val)
+function[output] = desaturateForAngle(img,val, width)
 
 hsvImage = rgb2hsv(img);         %# Convert the image to HSV space
 hPlane = 360.*hsvImage(:,:,1);     %# Get the hue plane scaled from 0 to 360
 sPlane = hsvImage(:,:,2);          %# Get the saturation plane
-if (val + 70 > 360)
-    nonRedIndex = (hPlane > val) | (hPlane < mod(val+70,360));
+if (val + width > 360)
+    nonRedIndex = (hPlane > val - width) | (hPlane < mod(val+width,360));
 else
-nonRedIndex = (hPlane > val) & (hPlane < val+70);
+nonRedIndex = (hPlane > val - width) & (hPlane < val+width);
 end
 sPlane(~nonRedIndex) = 0;           %# Set the selected pixel saturations to 0
 hsvImage(:,:,2) = sPlane;          %# Update the saturation plane
 output = hsv2rgb(hsvImage);      %# Convert the image back to RGB space
 
+
+function[finalColors] = mainColors(img)
+hsvImage = rgb2hsv(img);         %# Convert the image to HSV space
+hPlane = 360.*hsvImage(:,:,1);     %# Get the hue plane scaled from 0 to 360
+[N,edges] = histcounts(hPlane, 36);
+[r, c, d] = size(img);
+imgSize = r*c;
+N = N/imgSize;
+N = 
+[ b, ix ] = sort( N(:), 'descend');
+b = b / imgSize;
+[pks,locs,w,p] = findpeaks(N);
+finalColors = [locs(pks>0.05) ; w(pks>0.05)];
+figure; plot(N);
 
 % --- Executes on slider movement.
 function slider3_Callback(hObject, eventdata, handles)
@@ -186,3 +203,20 @@ function edit2_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton1.
+function pushbutton1_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.currentColor = handles.currentColor + 1;
+if (handles.currentColor > length(handles.colors) )
+    handles.currentColor = 1;
+end
+guidata(hObject,handles);
+
+handles.current_data = ...
+    desaturateForAngle(handles.image, handles.colors(1, handles.currentColor)*10, handles.colors(2, handles.currentColor));
+imshow(handles.current_data);
