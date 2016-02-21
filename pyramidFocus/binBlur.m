@@ -5,10 +5,10 @@ function [ output ] = binBlur( input , kernelSize )
 output = zeros(size(input));
     H = fspecial('disk',kernelSize);
 for i = 0.1 : 0.1 : 1.1
-   temp = zeros(size(input));
-   idx = input >= (i - 0.1) && (input < i);
-   temp = temp + input(idx);
-   output(idx) = output(idx) + imfilter(temp,H,'replicate');
+   temp = input;
+   idx = input >= (i - 0.1) & (input < i);
+   temp(~idx) = 0;
+   output = output + imfilter(temp,H);
 end
 
 
