@@ -4,8 +4,8 @@ function [ depth ] = depthForCoupleFocus( img1,img2 , gray)
 
 
 [r,c,d] = size(img1);
-kernelSize = max(r,c)/100;
-kernelSize = round(kernelSize.^(1.8));
+kernelSize = max(r,c)/200;
+kernelSize = round(kernelSize);
 H = fspecial('average',kernelSize);
 
 imgGray1 = rgb2gray(img1);
@@ -30,13 +30,13 @@ depthGray = remapInterpolation(depthGray, (meanVal*10-5)*0.7, 0.7);
 
 
 % depthGray(depthGray>1) = 1;
-figure;
-subplot(1,3,1);
-imshow(depthGrayO);
-subplot(1,3,2);
-imshow(depthGray1);
-subplot(1,3,3);
-imshow(depthGray);
+% figure;
+% subplot(1,3,1);
+% imshow(depthGrayO);
+% subplot(1,3,2);
+% imshow(depthGray1);
+% subplot(1,3,3);
+% imshow(depthGray);
 
 
 
