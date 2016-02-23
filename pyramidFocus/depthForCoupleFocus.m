@@ -4,7 +4,7 @@ function [ depth ] = depthForCoupleFocus( img1,img2 , gray)
 
 
 [r,c,d] = size(img1);
-kernelSize = max(r,c)/200;
+kernelSize = max(r,c)/100;
 kernelSize = round(kernelSize);
 H = fspecial('average',kernelSize);
 

@@ -1,6 +1,6 @@
-img1 = im2double(imread('./photos/mouse/IMG_0552.jpg'));
-img2 = im2double(imread('./photos/mouse/IMG_0553.jpg'));
-img3 = im2double(imread('./photos/mouse/IMG_0554.jpg'));
+img1 = im2double(imread('./photos/fruit/IMG_5882.jpg'));
+img2 = im2double(imread('./photos/fruit/IMG_5883.jpg'));
+img3 = im2double(imread('./photos/fruit/IMG_5884.jpg'));
 
 img1 = imresize(img1,0.8);
 img2 = imresize(img2,0.8);
@@ -80,12 +80,20 @@ end
 finalImg3 = pyrReconstruct(pyrFinal3);
 
 pyr1 = genPyr(finalImg3,'laplace',4);
+pyrFinal5 = {};
+pyrFinal5{length(pyr1)} = pyr1{length(pyr1)};
+for pyrNum = 1 : length(pyr1)-1
+    pyrFinal5{pyrNum} = real(pyr1{pyrNum}.*depthMaps{pyrNum});
+end
+finalImg5 = pyrReconstruct(pyrFinal5);
+
+pyr1 = genPyr(finalImg5,'laplace',4);
 pyrFinal4 = {};
 pyrFinal4{length(pyr1)} = pyr1{length(pyr1)};
 pyrFinal4{length(pyr1)-1} = pyr1{length(pyr1)-1};
 
 for pyrNum = 1 : length(pyr1)-2
-    pyrFinal4{pyrNum} = real(pyr1{pyrNum}.*1.02);
+    pyrFinal4{pyrNum} = real(pyr1{pyrNum}.*1.1);
 end
 finalImg4 = pyrReconstruct(pyrFinal4);
 
@@ -102,17 +110,17 @@ figure;
 ax1=subplot(2,2,1);
 imshow(img1);
 ax2=subplot(2,2,2);
-imshow(finalImg2);
+imshow(finalImg4);
 ax3=subplot(2,2,3);
-imshow(finalImg3);
+imshow(finalImg5);
 ax4=subplot(2,2,4);
 imshow(finalImg4);
 % imshowpair(finalImg,finalImg2,'diff');
 
 linkaxes([ax1 ax2 ax3 ax4],'xy')
 % figure; imshow(finalImg);
-% imwrite(img1,'kitchenOriginal.jpg')
-
-% imwrite(finalImg3,'kitchenResult.jpg')
+% imwrite(img1,'fruitOriginal.jpg')
+% 
+imwrite(finalImg4,'fruitResult3.jpg')
 
 's';
