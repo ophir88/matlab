@@ -2,12 +2,12 @@ img1 = im2double(imread('./photos/fruit/IMG_5882.jpg'));
 img2 = im2double(imread('./photos/fruit/IMG_5883.jpg'));
 img3 = im2double(imread('./photos/fruit/IMG_5884.jpg'));
 
-img1 = imresize(img1,0.8);
-img2 = imresize(img2,0.8);
-img3 = imresize(img3,0.8);
+img1 = imresize(img1,0.4);
+img2 = imresize(img2,0.4);
+img3 = imresize(img3,0.4);
 
 [r,c,d] = size(img2);
-close all;
+% close all;
 imgs = {};
 % figure; imshow(img1);
 % imwrite(img1,'mouseOriginal.jpg')
@@ -53,20 +53,24 @@ for pyrNum = 1 : length(pyr1)-1
     if (pyrNum < 2)
     depthMap1 = depthForCoupleFocus(pyr1{pyrNum}, pyr2{pyrNum}, 0);
     depthMap2 = depthForCoupleFocus(depthMap1, pyr3{pyrNum}, 0);
+    depthMap3 = depthForTripleFocus(pyr1{pyrNum}, pyr2{pyrNum}, pyr3{pyrNum});
+
     figure;
     ax1=subplot(1,3,1);
     imshow(depthMap1);
     ax2=subplot(1,3,2);
     imshow(depthMap2);
+    ax3=subplot(1,3,3);
+    imshow(depthMap3);
 % imshowpair(finalImg,finalImg2,'diff');
 
-linkaxes([ax1 ax2],'xy')
+linkaxes([ax1 ax2 ax3],'xy')
     else
         [r,c,d] = size(pyr2{pyrNum});
-        depthMap2 = imresize(depthMap2 , [r c]);
+        depthMap3 = imresize(depthMap3 , [r c]);
     end
-    depthMaps{pyrNum} = depthMap2;
-    pyrFinal2{pyrNum} = real(pyr1{pyrNum}.*depthMap2);
+    depthMaps{pyrNum} = depthMap3;
+    pyrFinal2{pyrNum} = real(pyr1{pyrNum}.*depthMap3);
     
 end
 finalImg2 = pyrReconstruct(pyrFinal2);
@@ -93,7 +97,7 @@ pyrFinal4{length(pyr1)} = pyr1{length(pyr1)};
 pyrFinal4{length(pyr1)-1} = pyr1{length(pyr1)-1};
 
 for pyrNum = 1 : length(pyr1)-2
-    pyrFinal4{pyrNum} = real(pyr1{pyrNum}.*1.1);
+    pyrFinal4{pyrNum} = real(pyr1{pyrNum}.*1.3);
 end
 finalImg4 = pyrReconstruct(pyrFinal4);
 
@@ -107,17 +111,17 @@ finalImg4 = pyrReconstruct(pyrFinal4);
 % finalImg3 = pyrReconstruct(pyrFinal3);
 
 figure;
-ax1=subplot(2,2,1);
+ax1=subplot(1,2,1);
 imshow(img1);
-ax2=subplot(2,2,2);
-imshow(finalImg4);
-ax3=subplot(2,2,3);
-imshow(finalImg5);
-ax4=subplot(2,2,4);
+% ax2=subplot(2,2,2);
+% imshow(finalImg4);
+% ax3=subplot(2,2,3);
+% imshow(finalImg5);
+ax4=subplot(1,2,2);
 imshow(finalImg4);
 % imshowpair(finalImg,finalImg2,'diff');
 
-linkaxes([ax1 ax2 ax3 ax4],'xy')
+linkaxes([ax1 ax4],'xy')
 % figure; imshow(finalImg);
 % imwrite(img1,'fruitOriginal.jpg')
 % 

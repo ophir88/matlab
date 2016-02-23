@@ -1,31 +1,62 @@
-function [ depth ] = depthForCoupleFocus( img1,img2 , gray)
+function [ depth ] = depthForTripleFocus( img1,img2 , img3)
 %DEPTHFORCOUPLEFOCUS Summary of this function goes here
 %   Detailed explanation goes here
 
 
 [r,c,d] = size(img1);
-kernelSize = max(r,c)/200;
+kernelSize = max(r,c)/80;
 kernelSize = round(kernelSize);
 H = fspecial('average',kernelSize);
 
 imgGray1 = rgb2gray(img1);
 imgGray2 = rgb2gray(img2);
+imgGray3 = rgb2gray(img3);
 
 
 imgGray1 = imfilter(imgGray1,H,'replicate');
 imgGray2 = imfilter(imgGray2,H,'replicate');
-depthGray = (imgGray2 - imgGray1);
-sorted = sort(reshape(depthGray,[],1), 'descend');
-minVal = mean(sorted(round(length(sorted)*95/100):length(sorted)));
-depthGray = (depthGray - minVal);
-sorted = sort(reshape(depthGray,[],1), 'descend');
-maxVal = mean(sorted(1:round(length(sorted)*5/100)));
-depthGray = 1 - depthGray/ maxVal;
-meanVal = mean(mean(depthGray));
-depthGrayO = depthGray;
-% depthGray(depthGray>1) = 1;
-depthGray1 = depthGray.^1.5;
-depthGray = remapInterpolation(depthGray, (meanVal*10-5), 0.7);
+imgGray3 = imfilter(imgGray3,H,'replicate');
+imgs ={};
+imgs{1} = imgGray1;
+imgs{2} = imgGray2;
+imgs{3} = imgGray3;
+
+depth = zeros(r,c);
+depth(imgGray1 > imgGray2 & imgGray1 > imgGray3) = 0;
+depth(imgGray2 > imgGray1 & imgGray2 > imgGray3) = 0.5;
+depth(imgGray3 > imgGray1 & imgGray3 > imgGray2) = 1;
+
+
+% for i = 1 : r
+%     for j = 1 : c
+%         maxVal = 0;
+%         index = 0;
+%         for k = 1 : 3
+%             if (img1{k}(i,j)>maxVal)
+%                 maxVal = img1{k}(i,j);
+%                 index = k - 1;                
+%             end
+%         end
+%         depth(i,j) = index/2;
+%     end
+% end
+depth = 1 - depth;
+depth = imfilter(depth,H,'replicate');
+
+% figure; imshow(depth);
+% depthGray = (imgGray3 - imgGray2 - imgGray1);
+% sorted = sort(reshape(depthGray,[],1), 'descend');
+% minVal = mean(sorted(round(length(sorted)*95/100):length(sorted)));
+% depthGray = (depthGray - minVal);
+% sorted = sort(reshape(depthGray,[],1), 'descend');
+% maxVal = mean(sorted(1:round(length(sorted)*5/100)));
+% depthGray = 1 - depthGray/ maxVal;
+% meanVal = mean(mean(depthGray));
+% depthGrayO = depthGray;
+% % depthGray(depthGray>1) = 1;
+% depthGray1 = depthGray.^1.5;
+% depthGray = remapInterpolation(depthGray, (meanVal*10-5), 0.7);
+
 
 
 % depthGray(depthGray>1) = 1;
@@ -68,7 +99,7 @@ depthGray = remapInterpolation(depthGray, (meanVal*10-5), 0.7);
 % subplot(1,3,3);
 % imshowpair(depthGrad,depthGray,'falsecolor');
 % if (gray == 1)
-depth = repmat(depthGray, [1,1,3]);
+depth = repmat(depth, [1,1,3]);
 % else
 % depth = repmat(depthGray2, [1,1,3]);
 
