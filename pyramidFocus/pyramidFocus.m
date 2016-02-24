@@ -1,6 +1,6 @@
-img1 = im2double(imread('./photos/largeDiff/flower3/IMG_5949.jpg'));
-img2 = im2double(imread('./photos/largeDiff/flower3/IMG_5950.jpg'));
-img3 = im2double(imread('./photos/largeDiff/flower3/IMG_5951.jpg'));
+img1 = im2double(imread('./photos/largeDiff/flower4/IMG_5952.jpg'));
+img2 = im2double(imread('./photos/largeDiff/flower4/IMG_5953.jpg'));
+img3 = im2double(imread('./photos/largeDiff/flower4/IMG_5954.jpg'));
 
 img1 = imresize(img1,0.4);
 img2 = imresize(img2,0.4);
