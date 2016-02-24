@@ -1,6 +1,6 @@
-img1 = im2double(imread('./photos/fruit/IMG_5882.jpg'));
-img2 = im2double(imread('./photos/fruit/IMG_5883.jpg'));
-img3 = im2double(imread('./photos/fruit/IMG_5884.jpg'));
+img1 = im2double(imread('./photos/largeDiff/flower3/IMG_5949.jpg'));
+img2 = im2double(imread('./photos/largeDiff/flower3/IMG_5950.jpg'));
+img3 = im2double(imread('./photos/largeDiff/flower3/IMG_5951.jpg'));
 
 img1 = imresize(img1,0.4);
 img2 = imresize(img2,0.4);
@@ -111,17 +111,17 @@ finalImg4 = pyrReconstruct(pyrFinal4);
 % finalImg3 = pyrReconstruct(pyrFinal3);
 
 figure;
-ax1=subplot(1,2,1);
+ax1=subplot(1,3,1);
 imshow(img1);
 % ax2=subplot(2,2,2);
 % imshow(finalImg4);
-% ax3=subplot(2,2,3);
-% imshow(finalImg5);
-ax4=subplot(1,2,2);
+ax3=subplot(1,3,2);
+imshow(finalImg5);
+ax4=subplot(1,3,3);
 imshow(finalImg4);
 % imshowpair(finalImg,finalImg2,'diff');
 
-linkaxes([ax1 ax4],'xy')
+linkaxes([ax1 ax3 ax4],'xy')
 % figure; imshow(finalImg);
 % imwrite(img1,'fruitOriginal.jpg')
 % 

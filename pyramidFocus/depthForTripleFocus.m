@@ -4,9 +4,10 @@ function [ depth ] = depthForTripleFocus( img1,img2 , img3)
 
 
 [r,c,d] = size(img1);
-kernelSize = max(r,c)/80;
+kernelSize = max(r,c)/100;
 kernelSize = round(kernelSize);
 H = fspecial('average',kernelSize);
+Hdepth = fspecial('average',round(kernelSize/3));
 
 imgGray1 = rgb2gray(img1);
 imgGray2 = rgb2gray(img2);
@@ -20,11 +21,16 @@ imgs ={};
 imgs{1} = imgGray1;
 imgs{2} = imgGray2;
 imgs{3} = imgGray3;
+depth = 3*imgs{1}./(imgs{3} + imgs{2} + imgs{1});
+ 
 
-depth = zeros(r,c);
-depth(imgGray1 > imgGray2 & imgGray1 > imgGray3) = 0;
-depth(imgGray2 > imgGray1 & imgGray2 > imgGray3) = 0.5;
-depth(imgGray3 > imgGray1 & imgGray3 > imgGray2) = 1;
+% depth = zeros(r,c);
+% idx1 = imgGray1 > imgGray2 & imgGray1 > imgGray3;
+% idx2 = imgGray1 > imgGray2 & imgGray1 > imgGray3;
+% idx3 = imgGray3 > imgGray1 & imgGray3 > imgGray2;
+% depth(idx1) = 0+ mean(mean((3*imgs{1}(idx1)./(imgs{3}(idx1) + imgs{2}(idx1) + imgs{1}(idx1)))));
+% depth(idx2) = 0.5 + mean(mean((3*imgs{2}(idx2)./(imgs{3}(idx2) + imgs{2}(idx2) + imgs{1}(idx2)))));
+% depth(idx3) = 0.9 + mean(mean((3*imgs{3}(idx3)./(imgs{3}(idx3) + imgs{2}(idx3) + imgs{1}(idx3)))));
 
 
 % for i = 1 : r
@@ -40,8 +46,8 @@ depth(imgGray3 > imgGray1 & imgGray3 > imgGray2) = 1;
 %         depth(i,j) = index/2;
 %     end
 % end
-depth = 1 - depth;
-depth = imfilter(depth,H,'replicate');
+% depth = 1 - depth;
+% depth = imfilter(depth,Hdepth,'replicate');
 
 % figure; imshow(depth);
 % depthGray = (imgGray3 - imgGray2 - imgGray1);
