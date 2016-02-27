@@ -1,6 +1,6 @@
-img1 = im2double(imread('./photos/largeDiff/flower1/IMG_5940.jpg'));
-img2 = im2double(imread('./photos/largeDiff/flower1/IMG_5941.jpg'));
-img3 = im2double(imread('./photos/largeDiff/flower1/IMG_5942.jpg'));
+img1 = im2double(imread('./photos/largeDiff/dog/IMG_5975.jpg'));
+img2 = im2double(imread('./photos/largeDiff/dog/IMG_5976.jpg'));
+img3 = im2double(imread('./photos/largeDiff/dog/IMG_5977.jpg'));
 
 img1 = imresize(img1,0.4);
 img2 = imresize(img2,0.4);
@@ -28,24 +28,24 @@ pyrFinal2{length(pyr1)} = pyr1{length(pyr1)};
 [r,c,d] = size(pyr2{3});
 depthMaps = {};
 for pyrNum = 1 : length(pyr1)-1
-    if (pyrNum < 2)
-    depthMap1 = depthForCoupleFocus(pyr1{pyrNum}, pyr2{pyrNum}, 0);
-    depthMap2 = depthForCoupleFocus(depthMap1, pyr3{pyrNum}, 0);
+%     if (pyrNum < 2)
+%     depthMap1 = depthForCoupleFocus(pyr1{pyrNum}, pyr2{pyrNum}, 0);
+%     depthMap2 = depthForCoupleFocus(depthMap1, pyr3{pyrNum}, 0);
     depthMap3 = depthForTripleFocus(img1, img2, img3);
-
-    figure;
-    ax1=subplot(1,3,1);
-    imshow(depthMap1);
-    ax2=subplot(1,3,2);
-    imshow(depthMap2);
-    ax3=subplot(1,3,3);
-    imshow(depthMap3);
-
-linkaxes([ax1 ax2 ax3],'xy')
-%     else
+%     figure; imshow(depthMap3);
+%     figure;
+%     ax1=subplot(1,3,1);
+%     imshow(depthMap1);
+%     ax2=subplot(1,3,2);
+%     imshow(depthMap2);
+%     ax3=subplot(1,3,3);
+%     imshow(depthMap3);
+% 
+% linkaxes([ax1 ax2 ax3],'xy')
+% %     else
 %         [r,c,d] = size(pyr2{pyrNum});
 %         depthMap3 = imresize(depthMap3 , [r c]);
-    end
+%     end
      [r,c,d] = size(pyr2{pyrNum});
         depthMap3 = imresize(depthMap3 , [r c]);
     depthMaps{pyrNum} = depthMap3;
@@ -76,7 +76,7 @@ pyrFinal4{length(pyr1)} = pyr1{length(pyr1)};
 pyrFinal4{length(pyr1)-1} = pyr1{length(pyr1)-1};
 
 for pyrNum = 1 : length(pyr1)-2
-    pyrFinal4{pyrNum} = real(pyr1{pyrNum}.*1.3);
+    pyrFinal4{pyrNum} = real(pyr1{pyrNum}.*1.5);
 end
 finalImg4 = pyrReconstruct(pyrFinal4);
 
@@ -102,8 +102,8 @@ imshow(finalImg4);
 
 linkaxes([ax1 ax3 ax4],'xy')
 % figure; imshow(finalImg);
-% imwrite(img1,'fruitOriginal.jpg')
+imwrite(img1,'kodaOriginal.jpg')
 % 
-imwrite(finalImg4,'fruitResult3.jpg')
+imwrite(finalImg4,'kodaResult3.jpg')
 
 's';
