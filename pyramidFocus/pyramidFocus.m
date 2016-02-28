@@ -21,18 +21,31 @@ imgsTransformed = sift_estimate_transformation(imgs);
 depthMap3 = depthForTripleFocus(img1, img2, img3);
 
 pyr1 = genPyr(img1,'laplace',4);
-
+[r,c,d] = size(pyr1{length(pyr1)});
+depthMapForLow = imresize(depthMap3 , [r c]);
+depthMapForLow = depthMapForLow(:,:,1);
+depthMapForLow = 1 - depthMapForLow;
+depthLogical = depthMapForLow > 0.4;
+imgSmallNTSC = rgb2ntsc(pyr1{length(pyr1)});
+ultraExposed = imgSmallNTSC(:,:,1);
+% figure; imshow(ultraExposed);
+lightIdx = ultraExposed > 0.8;
+finalIdx = logical(lightIdx .* depthLogical);
+ultraExposed(finalIdx) = ultraExposed(finalIdx)*1.3;
+imgSmallNTSC(:,:,1) = ultraExposed;
+imgSmallRGB = ntsc2rgb(imgSmallNTSC);
+% figure; imshow(imgSmallRGB);
 pyrFinal2 = {};
-pyrFinal2{length(pyr1)} = pyr1{length(pyr1)};
+pyrFinal2{length(pyr1)} = imgSmallRGB;
 depthMaps = {};
 
 for pyrNum = 1 : length(pyr1)-1
     [r,c,d] = size(pyr1{pyrNum});
     depthMap3 = imresize(depthMap3 , [r c]);
     depthMaps{pyrNum} = depthMap3;
-    pyrFinal2{pyrNum} = real(pyr1{pyrNum}.*depthMap3);
-    
+    pyrFinal2{pyrNum} = real(pyr1{pyrNum}.*depthMap3); 
 end
+
 finalImg2 = pyrReconstruct(pyrFinal2);
 
 finalImg3 = pyramidBlur(finalImg2, depthMaps);
