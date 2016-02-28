@@ -20,6 +20,24 @@ imgsTransformed = sift_estimate_transformation(imgs);
 [img3, SUPPORT] = iat_inverse_warping(img3, imgsTransformed{3}.T, 'homography', 1:c, 1:r);
 depthMap3 = depthForTripleFocus(img1, img2, img3);
 
+partialImage = (1-depthMap3).*img1;
+partialImage2 = pyramidBlur(partialImage);
+[r,c,d] = size(img1);
+
+partialImage2 = imresize(partialImage2 , [r c]);
+partialImage3 = partialImage2 + depthMap3.*img1;
+figure;
+ax1=subplot(1,3,1);
+imshow(partialImage);
+% ax2=subplot(2,2,2);
+% imshow(finalImg4);
+ax3=subplot(1,3,2);
+imshow(partialImage2);
+ax4=subplot(1,3,3);
+imshow(partialImage3);
+
+linkaxes([ax1 ax3 ax4],'xy')
+
 pyr1 = genPyr(img1,'laplace',4);
 [r,c,d] = size(pyr1{length(pyr1)});
 depthMapForLow = imresize(depthMap3 , [r c]);
@@ -83,8 +101,8 @@ imshow(finalImg4);
 
 linkaxes([ax1 ax4],'xy')
 % figure; imshow(finalImg);
-% imwrite(img1,'kodaOriginal.jpg')
+% imwrite(img1,'flowerOriginal.jpg')
 % 
-% imwrite(finalImg4,'kodaResult4.jpg')
+% imwrite(finalImg4,'flowerResult2.jpg')
 
 's';

@@ -4,7 +4,7 @@ function [ depth ] = depthForTripleFocus( img1,img2 , img3)
 
 
 [r,c,d] = size(img1);
-kernelSize = max(r,c)/40;
+kernelSize = max(r,c)/100;
 kernelSize = round(kernelSize);
 H = fspecial('average',kernelSize);
 Hdepth = fspecial('average',round(kernelSize/5));
@@ -16,9 +16,9 @@ imgGray1 = imgradient( rgb2gray(img1));
 imgGray2 = imgradient(rgb2gray(img2));
 imgGray3 = imgradient(rgb2gray(img3));
 
-imgGray1 = imfilter(imgGray1,H,'replicate');
-imgGray2 = imfilter(imgGray2,H,'replicate');
-imgGray3 = imfilter(imgGray3,H,'replicate');
+imgGrayG1 = imfilter(imgGray1,H,'replicate');
+imgGrayG2 = imfilter(imgGray2,H,'replicate');
+imgGrayG3 = imfilter(imgGray3,H,'replicate');
 % figure;
 %     ax1=subplot(1,3,1);
 %     imshow(imgGray1);
@@ -29,16 +29,21 @@ imgGray3 = imfilter(imgGray3,H,'replicate');
 % 
 % linkaxes([ax1 ax2 ax3],'xy')
 imgs ={};
-imgs{1} = imgGray1;
-imgs{2} = imgGray2;
-imgs{3} = imgGray3;
+imgs{1} = imgGrayG1;
+imgs{2} = imgGrayG2;
+imgs{3} = imgGrayG3;
 epsilon = 0.00001;
-depth = 3*imgs{1}./(imgs{3} + imgs{2} + imgs{1} + epsilon);
+depth = 3*imgs{1}./(imgs{3} + imgs{1} + epsilon);
 % figure; imshow(depth);
 depth = normalize(depth);
 % figure; imshow(depth);
 meanVal = mean(mean(depth));
 depth = remapInterpolation(depth, (meanVal*10-5), 0.7);
+depthW = wlsFilter(depth, 1, 1.2, imgGray1);
+depthW = remapInterpolation(depthW, 0, 1.6);
+
+figure; imshow(depthW);
+
 % depth = imfilter(depth,Hdepth,'replicate');
 
 % depth = depth.^2;
@@ -51,7 +56,7 @@ depth = remapInterpolation(depth, (meanVal*10-5), 0.7);
 % depth(idx2) = 0.5;
 % depth(idx3) = 0;
 
-depth = repmat(depth, [1,1,3]);
+depth = repmat(depthW, [1,1,3]);
 
 
 end
