@@ -4,10 +4,10 @@ function [ imgs ] = loadImages( foldername , imgType )
 
 Imgs = dir([foldername '/']);
     NumImgs = size(Imgs,1);
-    image = double(imread([foldername '/' Imgs(4).name]));
+    image = double(imreadAutoRot([foldername '/' Imgs(4).name]));
     X = zeros([NumImgs size(image)]);
     for i=4:NumImgs,
-      image = im2double(imread([foldername '/' Imgs(i).name]));
+      image = im2double(imreadAutoRot([foldername '/' Imgs(i).name]));
       imgs{i-3}=image;
     end
 end

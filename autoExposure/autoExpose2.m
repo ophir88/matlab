@@ -46,7 +46,7 @@ shadowEdges = imgLowGEdge - imgLowGEdge.*imgHighGEdge;
 HighlightEdges = imgHighGEdge - imgLowGEdge.*imgHighGEdge;
 allEdges = imgHighGEdge + imgLowGEdge + imgOriginalEdge;
 visibilityAll = sum(sum(allEdges));
-shadow = sum(sum(shadowEdges)) / visibilityAll;
+shadow = sum(sum(shadowEdges)) * 1.7 / visibilityAll;
 highlight = -sum(sum(HighlightEdges)) / visibilityAll;
 tElapsed = toc(tStart);  
 fprintf('total time for img : %.2f seconds. \n',tElapsed')
@@ -57,6 +57,10 @@ radius = round(min(oRow,oCols) * 4 / 100);
 filteredImg = imguidedfilter(imgOriginD,'NeighborhoodSize',[radius radius]);
 
 detailImage = imgOriginD - filteredImg;
+
+Icurve = 0:1/255:1;
+resultCurve = real(sCruveImg(Icurve,shadow, highlight));
+        
 imgOriginYCB(:,:,1) = sCruveImg(imgOriginYCB(:,:,1) , shadow, highlight);
 imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , shadow/8, highlight/8);
 imgOriginYCB(:,:,3) = sCruveImg(imgOriginYCB(:,:,3) , shadow/8, highlight/8);

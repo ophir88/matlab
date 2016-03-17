@@ -1,4 +1,4 @@
-function [ output ] = autoCurve( img )
+function [ output ] = autoCurveEnlight( img )
 %AUTOCURVE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -13,9 +13,13 @@ img = imresize(img, 1/ aspect);
 imgYCB = rgb2ycbcr(img);
 imgY = imgYCB(:,:,1);
 [J, T] = histeq(imgY);
-x = fminsearch(@(x) sCurveLUT(x,T),[0,0]);
+x = fminsearch(@(x) enlightCurveError(x,T),[0,0,0]);
+
+x(x>1)=1;
+x(x<0)=0;
+
 Icurve = 0:1/255:1;
-resultCurve = real(sCruveImg(Icurve,x(1), x(2)));
+LUT = enlightCurve(x, Icurve);
 % resultCurve = real(sCruveImg(Icurve,shadow, highlight));
 % figure; plot(resultCurve);
 imgOriginD = im2double(imgOrigin);
@@ -25,10 +29,13 @@ radius = round(min(oRow,oCols) * 4 / 100);
 filteredImg = imguidedfilter(imgOriginD,'NeighborhoodSize',[radius radius]);
 
 detailImage = imgOriginD - filteredImg;
+% figure; imshow(imgOriginYCB(:,:,1));
+% figure; imshow(applyLUT(imgOriginYCB(:,:,1),LUT));
+imgOriginYCB(:,:,1) = applyLUT(imgOriginYCB(:,:,1),LUT);
 
-imgOriginYCB(:,:,1) = sCruveImg(imgOriginYCB(:,:,1) , x(1), x(2));
-imgOriginYCB(:,:,2) = sCruveImg(imgOriginYCB(:,:,2) , x(1)/8, x(2)/8);
-imgOriginYCB(:,:,3) = sCruveImg(imgOriginYCB(:,:,3) , x(1)/8, x(2)/8);
+% 
+% imgOriginYCB(:,:,2) = applyLUT(imgOriginYCB(:,:,2),LUT);
+% imgOriginYCB(:,:,3) = applyLUT(imgOriginYCB(:,:,3),LUT);
 
 finalResult1 = ntsc2rgb(imgOriginYCB);
 output = finalResult1 + (2*finalResult1.*(1 - finalResult1)).*detailImage;
