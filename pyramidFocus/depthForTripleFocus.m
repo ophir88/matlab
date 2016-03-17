@@ -4,14 +4,10 @@ function [ depth ] = depthForTripleFocus( img1,img2 , img3)
 
 
 [r,c,d] = size(img1);
-kernelSize = max(r,c)/150;
+kernelSize = max(r,c)/250;
 kernelSize = round(kernelSize);
 H = fspecial('disk',kernelSize);
-Hdepth = fspecial('disk',round(kernelSize/5));
 
-% imgGray1 = rgb2gray(img1);
-% imgGray2 = rgb2gray(img2);
-% imgGray3 = rgb2gray(img3);
 imgGray1 = imgradient( rgb2gray(img1));
 imgGray2 = imgradient(rgb2gray(img2));
 imgGray3 = imgradient(rgb2gray(img3));
@@ -39,26 +35,13 @@ depth = 3*imgs{1}./(imgs{1} + imgs{2} + imgs{3}  + epsilon);
 % figure; imshow(depth);
 depth = normalize(depth);
 meanVal = mean(mean(depth));
-depth = remapInterpolation(depth, (meanVal*10-5), 1);
+% depth = remapInterpolation(depth, (meanVal*10-5), 1);
 figure; imshow(depth);
 
 depthW = wlsFilter(depth, 1, 1.2, imgGray1);
-depthW = remapInterpolation(depthW, 1.5, 1.2);
+depthW = remapInterpolation(depthW, 1.5, 2);
 
 figure; imshow(depthW);
-
-% depth = imfilter(depth,Hdepth,'replicate');
-
-% depth = depth.^2;
-
-% depth = zeros(r,c);
-% idx1 = imgGray1 > imgGray2 & imgGray1 > imgGray3;
-% idx2 = imgGray2 > imgGray1 & imgGray2 > imgGray3;
-% idx3 = imgGray3 > imgGray1 & imgGray3 > imgGray2;
-% depth(idx1) = 1;
-% depth(idx2) = 0.5;
-% depth(idx3) = 0;
-
 depth = repmat(depthW, [1,1,3]);
 
 
