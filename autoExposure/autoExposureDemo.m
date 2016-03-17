@@ -21,9 +21,9 @@ for i = 1 : length(imgs)
 %     title('Result');
 %     ax3 =subplot(2,2,2);
 %     imshow(imHistResult);
-%     title('hist equalization');
+%     title('hist equalization');2
     ax2 =subplot(1,2,2);
-    imshow((imgOrigin.*0.5 + imHistResult.*0.5));
+    imshow(imHistResult);
     title('blended');
     linkaxes([ax1 ax2],'xy')
 end

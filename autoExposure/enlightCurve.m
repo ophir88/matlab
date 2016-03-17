@@ -1,4 +1,4 @@
-function  result  = enlightCurve(x, a )
+function  result  = enlightCurve(x, regX )
 %ENLIGHTCURVES Summary of this function goes here
 %   Detailed explanation goes here
 location = './curves/';
@@ -6,7 +6,7 @@ identity = 0:1/255:1;
 
 % Brightness:
 % if x(1) >= 0
-%     brightnessLUT = im2double(imread([location 'PositiveBrightnessCurve.png']));
+    brightnessLUT = im2double(imread([location 'PositiveBrightnessCurve.png']));
 % else
 %     brightnessLUT = im2double(imread([location 'NegativeBrightnessCurve.png']));
 % end
@@ -35,8 +35,17 @@ shadowsLUT = im2double(imread([location 'PositiveShadowsCurve.png']));
 %     shadowsLUT = im2double(imread([location 'NegativeShadowsCurve.png']));
 % end
 % result = interp1(identity, lutSlider(shadowsLUT,abs(x(3))), y, 'linear');
-
-result = identity  + lutSlider(contrastLUT-identity,x(1))+ lutSlider(highlightsLUT-identity,x(2))+ lutSlider(shadowsLUT-identity,x(3));
+if(regX == 0)
+result = identity  + lutSlider(contrastLUT-identity,x(1)) + ...
+    lutSlider(highlightsLUT-identity,x(2)) + ...
+    lutSlider(shadowsLUT-identity,x(3)) + ...
+    lutSlider(brightnessLUT-identity,x(4));
+else
+   result = identity  + (contrastLUT-identity).*x(1) + ...
+       (highlightsLUT-identity).*x(2) + ...
+       (shadowsLUT-identity).*x(3) + ...
+       (brightnessLUT-identity).*x(4);
+end
 % FillLight:
 % fillLight = im2double(imread([location 'FillLightCurve.png']));
 % result = interp1(identity, lutSlider(fillLight,abs(x(5))), y, 'linear');
