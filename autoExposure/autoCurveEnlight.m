@@ -1,4 +1,4 @@
-function [ output ] = autoCurveEnlight( img )
+function [ output ] = autoCurveEnlight( img, method )
 %AUTOCURVE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -15,21 +15,22 @@ imgY = imgYCB(:,:,1);
 [J, T] = histeq(imgY);
 x = fminsearch(@(x) enlightCurveError(x,T),[0,0,0,0]);
 x2 = curveSolver(T);
-
+x2 = x2./(max(x2));
 Icurve = 0:1/255:1;
+if(method == 0)
 LUT = enlightCurve(x, 0);
-
-LUT2 = enlightCurve(x2, 1);
-
+else 
+LUT = enlightCurve(x2, 1);
+end
 LUT = LUT./max(LUT);
-LUT2 = LUT2./max(LUT2);
+% LUT2 = LUT2./max(LUT2);
 figure;
-subplot(2,2,1);
+subplot(1,2,1);
 plot(T);
-subplot(2,2,3);
+subplot(1,2,2);
 plot(LUT);
-subplot(2,2,4);
-plot(LUT2);
+% subplot(2,2,4);
+% plot(LUT2);
 % x(x>1)=1;
 % x(x<0)=0;
 

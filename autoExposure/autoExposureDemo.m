@@ -8,22 +8,20 @@ for i = 1 : length(imgs)
     aspect = maxSize / 400;
     
     imgOrigin = imresize(img, 3/ aspect);
-    imHistResult = autoCurveEnlight(img);
+    enlightAlgebra = autoCurveEnlight(img, 0);
+    enlightMin = autoCurveEnlight(img, 1);
 %     imgResultQuick = autoExpose2(img);
     
 %     imgResult = autoExpos(img);
     figure;
-    ax1 = subplot(1,2,1);
+    ax1 = subplot(1,3,1);
     imshow(imgOrigin);
     title('Original');
-%     ax2 =subplot(2,2,3);
-%     imshow(imgResult);
-%     title('Result');
-%     ax3 =subplot(2,2,2);
-%     imshow(imHistResult);
-%     title('hist equalization');2
-    ax2 =subplot(1,2,2);
-    imshow(imHistResult);
-    title('blended');
+    ax2 =subplot(1,3,2);
+    imshow(enlightAlgebra);
+    title('enlight algebra');
+    ax3 =subplot(1,3,3);
+    imshow(enlightMin);
+    title('enlight min');
     linkaxes([ax1 ax2],'xy')
 end

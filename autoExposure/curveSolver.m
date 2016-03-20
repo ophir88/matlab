@@ -11,12 +11,17 @@ highlightsLUT = im2double(imread([location 'NegativeHighlightsCurve.png']));
 highlightsLUT = highlightsLUT - identity;
 shadowsLUT = im2double(imread([location 'PositiveShadowsCurve.png']));
 shadowsLUT = shadowsLUT - identity;
+fillLight = im2double(imread([location 'FillLightCurve.png']));
+fillLight = fillLight - identity;
 
-A = [contrastLUT' highlightsLUT' shadowsLUT' brightnessLUT'];
 
+A = [contrastLUT' highlightsLUT' shadowsLUT' brightnessLUT' fillLight'];
+curve = curve - identity;
 AtA = transpose(A)*A;
-AtB = transpose(A)*curve';
-x = AtA\AtB;
+AtB = transpose(A)*(curve - identity)';
+x = (AtA+eye(5))\AtB;
+% x = x - min(x);
+% x = x ./ max(x);
 
 end
 
