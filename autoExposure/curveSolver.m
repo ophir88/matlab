@@ -19,6 +19,7 @@ A = [contrastLUT' highlightsLUT' shadowsLUT' brightnessLUT' fillLight'];
 curve = curve - identity;
 AtA = transpose(A)*A;
 AtB = transpose(A)*(curve - identity)';
+
 x = (AtA+eye(5))\AtB;
 % x = x - min(x);
 % x = x ./ max(x);
