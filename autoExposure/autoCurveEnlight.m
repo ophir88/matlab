@@ -1,11 +1,10 @@
-function [ output ] = autoCurveEnlight( img, method )
+function [ output, outputNormlized, T, LUT, LUTNormalized] = autoCurveEnlight( img, method )
 %AUTOCURVE Summary of this function goes here
 %   Detailed explanation goes here
 
 [R,C,d] = size(img);
 maxSize = max(R,C);
 aspect = maxSize / 400;
-% tStart = tic;  % TIC, pair 2  
 imgOrigin = imresize(img, 3/ aspect);
 img = imresize(img, 1/ aspect);
 
@@ -13,48 +12,39 @@ img = imresize(img, 1/ aspect);
 imgYCB = rgb2ycbcr(img);
 imgY = imgYCB(:,:,1);
 [J, T] = histeq(imgY);
-x = fminsearch(@(x) enlightCurveError(x,T),[0,0,0,0]);
-x2 = curveSolver(T);
-x2 = x2./(max(x2));
-Icurve = 0:1/255:1;
-if(method == 0)
-LUT = enlightCurve(x, 0);
-else 
-LUT = enlightCurve(x2, 1);
-end
-LUT = LUT./max(LUT);
-% LUT2 = LUT2./max(LUT2);
-figure;
-subplot(1,2,1);
-plot(T);
-subplot(1,2,2);
-plot(LUT);
-% subplot(2,2,4);
-% plot(LUT2);
-% x(x>1)=1;
-% x(x<0)=0;
+[curveSet, weights ] = curveSolver(T, 0);
 
+LUT = applyCurves(curveSet, weights);
+[curveSet2, weights2 ] = curveSolver(T, 1);
 
-% LUT = LUT./(max(LUT));
-% resultCurve = real(sCruveImg(Icurve,shadow, highlight));
-% figure; plot(resultCurve);
+LUTNormalized = applyCurves(curveSet2, weights2);
+
+% LUT = LUT./max(LUT);
+
 imgOriginD = im2double(imgOrigin);
 imgOriginYCB = rgb2ntsc(imgOriginD);
+imgOriginYCB(:,:,1) = imgOriginYCB(:,:,1) - min(min(imgOriginYCB(:,:,1)));
+imgOriginYCB(:,:,1) = imgOriginYCB(:,:,1) ./ (max(max(imgOriginYCB(:,:,1))));
 [oRow, oCols,d] = size(imgOriginD);
 radius = round(min(oRow,oCols) * 4 / 100);
 filteredImg = imguidedfilter(imgOriginD,'NeighborhoodSize',[radius radius]);
 
 detailImage = imgOriginD - filteredImg;
-% figure; imshow(imgOriginYCB(:,:,1));
-% figure; imshow(applyLUT(imgOriginYCB(:,:,1),LUT));
-imgOriginYCB(:,:,1) = applyLUT(imgOriginYCB(:,:,1),LUT);
 
-% 
-% imgOriginYCB(:,:,2) = applyLUT(imgOriginYCB(:,:,2),LUT);
-% imgOriginYCB(:,:,3) = applyLUT(imgOriginYCB(:,:,3),LUT);
+imgOriginYCB(:,:,1) = applyLUT(imgOriginYCB(:,:,1),LUT);
 
 finalResult1 = ntsc2rgb(imgOriginYCB);
 output = finalResult1 + (2*finalResult1.*(1 - finalResult1)).*detailImage;
 
+imgOriginYCBN = rgb2ntsc(imgOriginD);
+imgOriginYCBN(:,:,1) = imgOriginYCBN(:,:,1) - min(min(imgOriginYCBN(:,:,1)));
+imgOriginYCBN(:,:,1) = imgOriginYCBN(:,:,1) ./ (max(max(imgOriginYCBN(:,:,1))));
+
+detailImage = imgOriginD - filteredImg;
+
+imgOriginYCBN(:,:,1) = applyLUT(imgOriginYCBN(:,:,1),LUTNormalized);
+
+finalResult2 = ntsc2rgb(imgOriginYCBN);
+outputNormlized = finalResult2 + (2*finalResult2.*(1 - finalResult2)).*detailImage;
 end
 
