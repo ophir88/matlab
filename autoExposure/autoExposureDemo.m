@@ -8,28 +8,22 @@ for i = 1 : length(imgs)
     aspect = maxSize / 400;
     
     imgOrigin = imresize(img, 3/ aspect);
-    [imageResult, imageResultNormalized originalCurve, resultingCurve, normalizedCurve] = autoCurveEnlight(img);
+    [imageResult, originalCurve, resultingCurve] = autoCurveEnlight(img);
 %     enlightMin = autoCurveEnlight(img, 1);
 
     figure(1);
-    ax1 = subplot(2,3,1);
+    ax1 = subplot(2,2,1);
     imshow(imgOrigin);
     title('Original');
-    ax2 =subplot(2,3,2);
+    ax2 =subplot(2,2,2);
     imshow(imageResult);
     title('result');
-    ax3 =subplot(2,3,3);
-    imshow(imageResultNormalized);
-    title('result normalized weights');
-    subplot(2,3,4);
+    subplot(2,2,3);
     plot(originalCurve);
     title('histogram equalization curve');
-    subplot(2,3,5);
+    subplot(2,2,4);
     plot(resultingCurve);
     title('curve approximation');
-    subplot(2,3,6);
-    plot(normalizedCurve);
-    title('curve normalized weights');
     linkaxes([ax1 ax2],'xy')
     input('');
 end

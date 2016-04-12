@@ -1,4 +1,4 @@
-function [ output, outputNormlized, T, LUT, LUTNormalized] = autoCurveEnlight( img, method )
+function [ output, T, LUT] = autoCurveEnlight( img, method )
 %AUTOCURVE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,13 +11,14 @@ img = imresize(img, 1/ aspect);
 % ==== Get Luminance channel====.
 imgYCB = rgb2ycbcr(img);
 imgY = imgYCB(:,:,1);
-[J, T] = histeq(imgY);
+[J, T] = histeq(matlab histogram
+);
 [curveSet, weights ] = curveSolver(T, 0);
 
 LUT = applyCurves(curveSet, weights);
-[curveSet2, weights2 ] = curveSolver(T, 1);
-
-LUTNormalized = applyCurves(curveSet2, weights2);
+% [curveSet2, weights2 ] = curveSolver(T, 1);
+% 
+% LUTNormalized = applyCurves(curveSet2, weights2);
 
 % LUT = LUT./max(LUT);
 
@@ -42,9 +43,9 @@ imgOriginYCBN(:,:,1) = imgOriginYCBN(:,:,1) ./ (max(max(imgOriginYCBN(:,:,1))));
 
 detailImage = imgOriginD - filteredImg;
 
-imgOriginYCBN(:,:,1) = applyLUT(imgOriginYCBN(:,:,1),LUTNormalized);
-
-finalResult2 = ntsc2rgb(imgOriginYCBN);
-outputNormlized = finalResult2 + (2*finalResult2.*(1 - finalResult2)).*detailImage;
+% imgOriginYCBN(:,:,1) = applyLUT(imgOriginYCBN(:,:,1),LUTNormalized);
+% 
+% finalResult2 = ntsc2rgb(imgOriginYCBN);
+% outputNormlized = finalResult2 + (2*finalResult2.*(1 - finalResult2)).*detailImage;
 end
 

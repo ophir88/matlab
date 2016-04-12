@@ -4,6 +4,7 @@ identity = 0:1/255:1;
 brightnessLUTP = im2double(imread([location 'PositiveBrightnessCurve.png']));
 brightnessLUTN = im2double(imread([location 'NegativeBrightnessCurve.png']));
 brightnessLUTN = identity + (identity - brightnessLUTN);
+fill = im2double(imread([location 'FillLightCurve.png']));
 
 contrastLUTP = im2double(imread([location 'PositiveContrastCurve.png']));
 contrastLUTN = im2double(imread([location 'NegativeContrastCurve.png']));
@@ -21,7 +22,7 @@ figure;
 subplot(2,2,1);
 plot(brightnessLUTP);
 hold on;
-plot(brightnessLUTN, 'red');
+plot(fill, 'red');
 hold off;
 title('Brightness');
 subplot(2,2,2);

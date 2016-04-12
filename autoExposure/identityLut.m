@@ -50,12 +50,11 @@
 % 
 % figure; imshow(LUT50Vibrance-LUT);
 % figure; imshow(LUT100Vibrance-LUT);
-x = -127/256 : 1/256 : 128/256;
-x = (0.25 + -x.^2) .* 1.5;
-x = im2uint8(x);
+x = 0 : 1/256 : 1;
+x = (0.25 -(x - 0.5).^2) * 3;
 % x = repmat(x, [1,1,3])
-imwrite(x,'vibranceLUT.png');
-figure; plot(x);
+% imwrite(x,'vibranceLUT.png');
+figure(1); plot(x);
 
 
 % imwrite(x,'vibranceLUT.png');
