@@ -90,9 +90,9 @@ img3 = im2double(imread('./photos/largeDiff/dog/3.jpg'));
 % img2 = imresize(Iwarped(:,:,:,2),0.4);
 % img3 = imresize(Iwarped(:,:,:,3),0.4);
 
-img1 = imresize(img1 ,0.4);
-img2 = imresize(img2,0.4);
-img3 = imresize(img3,0.4);
+img1 = imresize(img1 ,0.2);
+img2 = imresize(img2,0.2);
+img3 = imresize(img3,0.2);
 [r,c,d] = size(img1);
 
 % Allignment:
@@ -106,7 +106,7 @@ imgsTransformed = sift_estimate_transformation(imgs);
 [img2, SUPPORT] = iat_inverse_warping(img2, imgsTransformed{2}.T, 'homography', 1:c, 1:r);
 [img3, SUPPORT] = iat_inverse_warping(img3, imgsTransformed{3}.T, 'homography', 1:c, 1:r);
 
-% Depth map:
+%% Depth map:
 % ----------
 depthMap3 = depthForTripleFocus(img1, img2, img3);
 
