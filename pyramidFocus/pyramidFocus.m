@@ -90,9 +90,9 @@ img3 = im2double(imread('./photos/largeDiff/dog/3.jpg'));
 % img2 = imresize(Iwarped(:,:,:,2),0.4);
 % img3 = imresize(Iwarped(:,:,:,3),0.4);
 
-img1 = imresize(img1 ,0.2);
-img2 = imresize(img2,0.2);
-img3 = imresize(img3,0.2);
+img1 = imresize(img1 ,0.3);
+img2 = imresize(img2,0.3);
+img3 = imresize(img3,0.3);
 [r,c,d] = size(img1);
 
 % Allignment:
@@ -110,9 +110,26 @@ imgsTransformed = sift_estimate_transformation(imgs);
 % ----------
 depthMap3 = depthForTripleFocus(img1, img2, img3);
 
+%%
 % Blur background:
 % ---------------
 % get background.
+% BlurBack = zeros(size(img1));
+% BlurFront = zeros(size(img1));
+% 
+% BlurBack(:,:,1) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,1), 40);
+% BlurBack(:,:,2) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,2), 40);
+% BlurBack(:,:,3) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,3), 40);
+% 
+% BlurFront(:,:,1) = imgaussfilt((1-depthMap3(:,:,1)), 40);
+% BlurFront(:,:,2) = imgaussfilt((1-depthMap3(:,:,1)), 40);
+% BlurFront(:,:,3) = imgaussfilt((1-depthMap3(:,:,1)), 40);
+% Blurred = BlurBack./BlurFront;
+% result = img1.*depthMap3 + Blurred.*(1-depthMap3);
+%%
+depthMap3 = depth2;
+
+% figure; imshow(depth);
 background = (1-depthMap3).*img1;
 % add highlight:
 background = highlight(background, 1.1);
@@ -121,6 +138,7 @@ background = highlight(background, 1.1);
 
 backgroundTop = pyramidBlur(background);
 backgroundTop = pyramidBlur(backgroundTop);
+
 % fix black (hole) diffusion.
 
 backgroundBottom = pyramidBlur(1-depthMap3);
@@ -140,12 +158,14 @@ foreGround = imresize(foreGround , [r c]);
 finalImage = background + foreGround;
 finalImage = pyrDetails(finalImage, 1.3);
 
-
+%%
 figure;
 ax1=subplot(1,2,1);
 imshow(img1);
 ax2=subplot(1,2,2);
 imshow(finalImage);
+% ax3=subplot(1,3,3);
+% imshow(result);
 linkaxes([ax1 ax2],'xy')
 % imwrite(img1,'dogOriginal.jpg')
 % 
