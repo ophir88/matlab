@@ -1,26 +1,26 @@
-% % 
+% %
 % % % Load images:
 % % % -----------
 % % img1 = im2double(imread('./photos/largeDiff/brain/1.jpg'));
 % % img2 = im2double(imread('./photos/largeDiff/brain/2.jpg'));
 % % img3 = im2double(imread('./photos/largeDiff/brain/3.jpg'));
-% % 
+% %
 % % % Resize:
 % % % -------
-% % 
+% %
 % % img1 = imresize(img1,0.4);
 % % img2 = imresize(img2,0.4);
 % % img3 = imresize(img3,0.4);
-% % 
+% %
 % % [r,c,d] = size(img1);
-% 
+%
 % % Allignment:
 % % % -----------
 % % Ioriginal = {};
 % % Ioriginal{1} = img1;
 % % Ioriginal{2} = img2;
 % % Ioriginal{3} = img3;
-% 
+%
 % %% set parameters
 % feature_method='sift';
 % estimate_method='RANSAC';
@@ -42,7 +42,7 @@
 % pickIndex=1:Nimages;
 % Ioriginal=Ioriginal(:,:,:,pickIndex);
 % Nimages = size(Ioriginal,4);
-% 
+%
 % %% align images - single alignment
 % % [sharpIndex, indexByRankOfSharpness, relativeSharpness] = choose_sharpest_image(Ioriginal);
 % Nimages = size(Ioriginal,4);
@@ -73,15 +73,15 @@
 % [Iwarped, supportPixels] = ...
 %   backwarp_to_ref_iat(Ioriginal, projectionMatrices, projection_type, 1);
 % % Icropped = crop_full_support(Iwarped, supportPixels);
-% 
-% 
+%
+%
 
 
 % Load images:
 % % -----------
-img1 = im2double(imread('./photos/largeDiff/dog/1.jpg'));
-img2 = im2double(imread('./photos/largeDiff/dog/2.jpg'));
-img3 = im2double(imread('./photos/largeDiff/dog/3.jpg'));
+img1 = im2double(imread('./photos/largeDiff/flower3/1.jpg'));
+img2 = im2double(imread('./photos/largeDiff/flower3/2.jpg'));
+img3 = im2double(imread('./photos/largeDiff/flower3/3.jpg'));
 
 % Resize:
 % -------
@@ -101,7 +101,7 @@ imgs = {};
 imgs{1} = img1;
 imgs{2} = img2;
 imgs{3} = img3;
-% 
+%
 imgsTransformed = sift_estimate_transformation(imgs);
 [img2, SUPPORT] = iat_inverse_warping(img2, imgsTransformed{2}.T, 'homography', 1:c, 1:r);
 [img3, SUPPORT] = iat_inverse_warping(img3, imgsTransformed{3}.T, 'homography', 1:c, 1:r);
@@ -116,11 +116,11 @@ depthMap3 = depthForTripleFocus(img1, img2, img3);
 % get background.
 % BlurBack = zeros(size(img1));
 % BlurFront = zeros(size(img1));
-% 
+%
 % BlurBack(:,:,1) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,1), 40);
 % BlurBack(:,:,2) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,2), 40);
 % BlurBack(:,:,3) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,3), 40);
-% 
+%
 % BlurFront(:,:,1) = imgaussfilt((1-depthMap3(:,:,1)), 40);
 % BlurFront(:,:,2) = imgaussfilt((1-depthMap3(:,:,1)), 40);
 % BlurFront(:,:,3) = imgaussfilt((1-depthMap3(:,:,1)), 40);
@@ -128,7 +128,51 @@ depthMap3 = depthForTripleFocus(img1, img2, img3);
 % result = img1.*depthMap3 + Blurred.*(1-depthMap3);
 %%
 depthMap3 = depth2;
+finalImageCombined = zeros(size(img1));
+for i = 0: 0.2: 0.8
+    currentImageIndx = depthMap3(:,:,1) > i & depthMap3(:,:,1) <= i+0.2;
+    currentImageIndx = repmat(currentImageIndx, [1,1,3]);
+    currentImage = img1;
+    currentImage(~currentImageIndx) = 0;
+    
+    
+    
+    background = (1-depthMap3).*currentImage;
+    % add highlight:
+    background = highlight(background, 2 - i);
+    % blur.
+    backgroundTop = background;
+    for j = i : 0.2 : 1
+      backgroundTop = pyramidBlur(backgroundTop);
+    backgroundBottom = pyramidBlur(backgroundBottom);
 
+    end
+%     backgroundTop = pyramidBlur(background);
+%     backgroundTop = pyramidBlur(backgroundTop);
+%     
+    % fix black (hole) diffusion.
+    
+    backgroundBottom = pyramidBlur(1-depthMap3);
+    backgroundBottom = pyramidBlur(backgroundBottom);
+    
+    background = backgroundTop./backgroundBottom;
+    background = imresize(background , [r c]);
+    background = background.*(1-depthMap3);
+    
+    % Increase foreground details:
+    % ---------------------------
+    foreGround = depthMap3.*currentImage;
+    foreGround = imresize(foreGround , [r c]);
+    
+    % Reattach foreground:
+    % --------------------
+    finalImage = background + foreGround;
+    finalImageCombined = finalImageCombined + finalImage;
+    figure(1); imshow(finalImageCombined);
+        input('');
+
+end
+%%
 % figure; imshow(depth);
 background = (1-depthMap3).*img1;
 % add highlight:
@@ -168,7 +212,7 @@ imshow(finalImage);
 % imshow(result);
 linkaxes([ax1 ax2],'xy')
 % imwrite(img1,'dogOriginal.jpg')
-% 
+%
 % imwrite(finalImage,'dogResult.jpg')
 
 's';

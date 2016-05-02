@@ -15,7 +15,7 @@ maxdist = 15;
 imgGray1 = imgradient( rgb2gray(img1));
 imgGray2 = imgradient(rgb2gray(img2));
 imgGray3 = imgradient(rgb2gray(img3));
-H = fspecial('disk',2);
+H = fspecial('average',4);
 epsilon = 0.00001;
 depths = zeros(r,c,5);
 for i = 0 : 4
@@ -26,7 +26,7 @@ for i = 0 : 4
     imgGrayG1 = imfilter(img1r,H,'replicate');
     imgGrayG2 = imfilter(img2r,H,'replicate');
     imgGrayG3 = imfilter(img3r,H,'replicate');
-    depthMap = 3*imgGrayG1./(imgGrayG1 + imgGrayG2 +imgGrayG3 + epsilon);
+    depthMap = 2*imgGrayG1./(imgGrayG1 + imgGrayG2 + epsilon);
     depths(:,:,i+1) = imresize(depthMap ,[r c]);
 end
 
@@ -102,8 +102,8 @@ depthWBottom = wlsFilter(1-depth, 1, 1.2, imgGray1);
 depthWB = depthW./depthWBottom;
 
 %%
-normalizedDepth = normalize(segmentedImg);
-normalizedDepth = remapInterpolation(normalizedDepth, -1 , 3);
+normalizedDepth = normalize(depthWB);
+normalizedDepth = remapInterpolation(normalizedDepth, 1.2 , 2.3);
 
 figure; imshow(normalizedDepth);
 depth2 = repmat(normalizedDepth, [1,1,3]);
