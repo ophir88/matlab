@@ -79,9 +79,9 @@
 
 % Load images:
 % % -----------
-img1 = im2double(imread('./photos/largeDiff/flower3/1.jpg'));
-img2 = im2double(imread('./photos/largeDiff/flower3/2.jpg'));
-img3 = im2double(imread('./photos/largeDiff/flower3/3.jpg'));
+img1 = im2double(imread('./photos/largeDiff/dog/1.jpg'));
+img2 = im2double(imread('./photos/largeDiff/dog/2.jpg'));
+img3 = im2double(imread('./photos/largeDiff/dog/3.jpg'));
 
 % Resize:
 % -------
@@ -110,51 +110,26 @@ imgsTransformed = sift_estimate_transformation(imgs);
 % ----------
 depthMap3 = depthForTripleFocus(img1, img2, img3);
 
+
 %%
-% Blur background:
-% ---------------
-% get background.
-% BlurBack = zeros(size(img1));
-% BlurFront = zeros(size(img1));
-%
-% BlurBack(:,:,1) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,1), 40);
-% BlurBack(:,:,2) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,2), 40);
-% BlurBack(:,:,3) = imgaussfilt((1-depthMap3(:,:,1)).*img1(:,:,3), 40);
-%
-% BlurFront(:,:,1) = imgaussfilt((1-depthMap3(:,:,1)), 40);
-% BlurFront(:,:,2) = imgaussfilt((1-depthMap3(:,:,1)), 40);
-% BlurFront(:,:,3) = imgaussfilt((1-depthMap3(:,:,1)), 40);
-% Blurred = BlurBack./BlurFront;
-% result = img1.*depthMap3 + Blurred.*(1-depthMap3);
-%%
-depthMap3 = depth2;
+depthMap3 = segmentedImg;
 finalImageCombined = zeros(size(img1));
 for i = 0: 0.2: 0.8
     currentImageIndx = depthMap3(:,:,1) > i & depthMap3(:,:,1) <= i+0.2;
     currentImageIndx = repmat(currentImageIndx, [1,1,3]);
     currentImage = img1;
     currentImage(~currentImageIndx) = 0;
-    
-    
-    
     background = (1-depthMap3).*currentImage;
-    % add highlight:
     background = highlight(background, 2 - i);
-    % blur.
     backgroundTop = background;
-    for j = i : 0.2 : 1
-      backgroundTop = pyramidBlur(backgroundTop);
-    backgroundBottom = pyramidBlur(backgroundBottom);
+    backgroundBottom = 1-depthMap3;
 
+    for j = i : 0.2 : 1
+        backgroundTop = pyramidBlur(backgroundTop);
+        backgroundBottom = pyramidBlur(backgroundBottom);
+        
     end
-%     backgroundTop = pyramidBlur(background);
-%     backgroundTop = pyramidBlur(backgroundTop);
-%     
-    % fix black (hole) diffusion.
-    
-    backgroundBottom = pyramidBlur(1-depthMap3);
-    backgroundBottom = pyramidBlur(backgroundBottom);
-    
+        
     background = backgroundTop./backgroundBottom;
     background = imresize(background , [r c]);
     background = background.*(1-depthMap3);
@@ -169,14 +144,17 @@ for i = 0: 0.2: 0.8
     finalImage = background + foreGround;
     finalImageCombined = finalImageCombined + finalImage;
     figure(1); imshow(finalImageCombined);
-        input('');
-
+    input('');
+    
 end
 %%
+depthMap3 = repmat(maskFilled, [1,1,3]);
+
 % figure; imshow(depth);
 background = (1-depthMap3).*img1;
+
 % add highlight:
-background = highlight(background, 1.1);
+% background = highlight(background, 1.1);
 % blur.
 
 
@@ -191,7 +169,7 @@ backgroundBottom = pyramidBlur(backgroundBottom);
 background = backgroundTop./backgroundBottom;
 background = imresize(background , [r c]);
 background = background.*(1-depthMap3);
-
+background(isnan(background))=0;
 % Increase foreground details:
 % ---------------------------
 foreGround = depthMap3.*img1;
@@ -200,7 +178,7 @@ foreGround = imresize(foreGround , [r c]);
 % Reattach foreground:
 % --------------------
 finalImage = background + foreGround;
-finalImage = pyrDetails(finalImage, 1.3);
+% finalImage = pyrDetails(finalImage, 1.3);
 
 %%
 figure;

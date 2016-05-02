@@ -3,7 +3,7 @@ function [ depth ] = depthForTripleFocus( img1,img2 , img3)
 %   Detailed explanation goes here
 
 %% segmentation
-ratio = 0.5;
+ratio = 1;
 kernelsize = 4;
 maxdist = 15;
 [Iseg, lables] = vl_quickseg(img1, ratio, kernelsize, maxdist);
@@ -12,9 +12,21 @@ maxdist = 15;
 [r,c,d] = size(img1);
 % kernelSize = max(r,c)/250;
 % kernelSize = round(kernelSize);
-imgGray1 = imgradient( rgb2gray(img1));
-imgGray2 = imgradient(rgb2gray(img2));
-imgGray3 = imgradient(rgb2gray(img3));
+h = [-1 2 -1];
+% result = conv2(image, mask);
+img1Gray = rgb2gray(img1);
+img2Gray = rgb2gray(img2);
+H = fspecial('average',4);
+
+img1Laplace = abs(imfilter(img1Gray,h,'replicate'))+abs(imfilter(img1Gray,h','replicate'));
+%     img1Laplace = (imfilter(img1Laplace,H,'replicate'));
+img2Laplace = abs(imfilter(img2Gray,h,'replicate'))+abs(imfilter(img2Gray,h','replicate'));
+%     img2Laplace = (imfilter(img2Laplace,H,'replicate'));
+
+%% depth maps pyramids
+img1Grad = imgradient(img1Gray);
+img2Grad = imgradient(img2Gray);
+%%
 H = fspecial('average',4);
 epsilon = 0.00001;
 depths = zeros(r,c,5);
@@ -35,36 +47,34 @@ maxLabel = max(max(lables));
 % For each lable group, we find the mean luminance, and set the whole
 % segment to it's matching LUT value.
 segmentedImg = zeros(r,c);
-depths = normalize(depths);
-logicalMap = imgGray1 > 0.2;
+% depths = normalize(depths);
+% logicalMap = imgGray1 > 0.2;
 for i = 0: maxLabel
-    i
-    indexs = (lables == i);
-    meanIndexs = logical(indexs.*logicalMap);
-    indexs5 = repmat(meanIndexs,[1,1,5]);
     
+    indexs = (lables == i);
+    %     meanIndexs = logical(indexs.*logicalMap);
+    %     indexs5 = repmat(meanIndexs,[1,1,5]);
+    %
     numOfInd = sum(sum(indexs));
     if(numOfInd > 0 )
-        %         variance = var(depths(indexs5));
-        %         if (variance < 0.1)
-        meanVal = mean(depths(indexs5));
-        if(meanVal > 0)
-            segmentedImg(indexs) = meanVal;
-            
+        power1 = sum(sum(img1Grad(indexs)));
+        power2 = sum(sum(img2Grad(indexs)));
+        if (abs(power1 - power2) > 0.2)
+            if (power1 >= power2)
+                segmentedImg(indexs) = 1;
+            else
+                segmentedImg(indexs) = 0;
+                
+            end
         else
-            segmentedImg(indexs) = 0;
+            segmentedImg(indexs) = 0.5;
             
         end
-        %         else
-%             segmentedImg(indexs) = 0;
-%         end
-        %         value = ceil(mean(mean(imgY(indexs))));
-        %         if (value == 0)
-        %             value = 1;
-        %         end
-        %         segmentedImg(indexs) = lut(1,value);
     end
 end
+%%
+maskFilled = 1 - imfill(1 - segmentedImg);
+
 %%
 % depthTop = wlsFilter(segmentedImg, 1, 1.2, imgGray1);
 % depthBottom = wlsFilter(1 - segmentedImg, 1, 1.2, imgGray1);
@@ -103,7 +113,7 @@ depthWB = depthW./depthWBottom;
 
 %%
 normalizedDepth = normalize(depthWB);
-normalizedDepth = remapInterpolation(normalizedDepth, 1.2 , 2.3);
+normalizedDepth = remapInterpolation(normalizedDepth, 2 , 2.3);
 
 figure; imshow(normalizedDepth);
 depth2 = repmat(normalizedDepth, [1,1,3]);
