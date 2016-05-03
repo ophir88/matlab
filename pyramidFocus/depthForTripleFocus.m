@@ -5,7 +5,7 @@ function [ depth ] = depthForTripleFocus( img1,img2 , img3)
 %% segmentation
 ratio = 1;
 kernelsize = 4;
-maxdist = 15;
+maxdist = 10;
 [Iseg, lables] = vl_quickseg(img1, ratio, kernelsize, maxdist);
 
 %% depth maps pyramids
@@ -16,11 +16,15 @@ h = [-1 2 -1];
 % result = conv2(image, mask);
 img1Gray = rgb2gray(img1);
 img2Gray = rgb2gray(img2);
+img3Gray = rgb2gray(img3);
+
 H = fspecial('average',4);
 
 img1Laplace = abs(imfilter(img1Gray,h,'replicate'))+abs(imfilter(img1Gray,h','replicate'));
 %     img1Laplace = (imfilter(img1Laplace,H,'replicate'));
 img2Laplace = abs(imfilter(img2Gray,h,'replicate'))+abs(imfilter(img2Gray,h','replicate'));
+img3Laplace = abs(imfilter(img3Gray,h,'replicate'))+abs(imfilter(img3Gray,h','replicate'));
+
 %     img2Laplace = (imfilter(img2Laplace,H,'replicate'));
 
 %% depth maps pyramids
@@ -57,21 +61,27 @@ for i = 0: maxLabel
     %
     numOfInd = sum(sum(indexs));
     if(numOfInd > 0 )
-        power1 = sum(sum(img1Grad(indexs)));
-        power2 = sum(sum(img2Grad(indexs)));
-        if (abs(power1 - power2) > 0.2)
-            if (power1 >= power2)
-                segmentedImg(indexs) = 1;
-            else
-                segmentedImg(indexs) = 0;
-                
-            end
-        else
-            segmentedImg(indexs) = 0.5;
-            
-        end
+        power1 = mean(mean(img1Laplace(indexs)));
+        power2 = mean(mean(img2Laplace(indexs)));
+%                 power3 = mean(mean(img3Laplace(indexs)));
+
+%         if (abs(power1 - power2) > 0.2)
+%             if (power1 >= power2)
+%                 segmentedImg(indexs) = 1;
+%             else
+%                 segmentedImg(indexs) = 0;
+%                 
+%             end
+%         else
+%             segmentedImg(indexs) = power1./(0.5*power2 + 0.5*power3);
+            segmentedImg(indexs) = power1./(power2);
+
+%         end
     end
 end
+            segmentedImg(isnan(segmentedImg)) = 0;
+            segmentedImg(isinf(segmentedImg)) = 0;
+
 %%
 maskFilled = 1 - imfill(1 - segmentedImg);
 
@@ -102,20 +112,20 @@ maskFilled = 1 - imfill(1 - segmentedImg);
 % epsilon = 0.00001;
 % depth = 3*imgs{1}./(imgs{1} + imgs{2} + imgs{3}  + epsilon);
 % figure; imshow(depth);
-depth = segmentedImg;
+depth = normalize(segmentedImg);
 meanVal = mean(mean(depth));
 % depth = remapInterpolation(depth, (meanVal*10-5), 1);
 figure; imshow(depth);
 
-depthW = wlsFilter(depth, 1, 1.2, imgGray1);
-depthWBottom = wlsFilter(1-depth, 1, 1.2, imgGray1);
-depthWB = depthW./depthWBottom;
+depthW = wlsFilter(depth, 1, 1.2, img1Gray);
+% depthWBottom = wlsFilter(1-depth, 1, 1.2, img1Gray);
+% depthWB = depthW./(depthWBottom + 0.00001);
 
 %%
-normalizedDepth = normalize(depthWB);
-normalizedDepth = remapInterpolation(normalizedDepth, 2 , 2.3);
-
+normalizedDepth = normalize(depthW);
+normalizedDepth = remapInterpolation(normalizedDepth, 1.8 , 2.1);
 figure; imshow(normalizedDepth);
+
 depth2 = repmat(normalizedDepth, [1,1,3]);
 
 

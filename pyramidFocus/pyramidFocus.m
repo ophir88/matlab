@@ -1,87 +1,11 @@
-% %
-% % % Load images:
-% % % -----------
-% % img1 = im2double(imread('./photos/largeDiff/brain/1.jpg'));
-% % img2 = im2double(imread('./photos/largeDiff/brain/2.jpg'));
-% % img3 = im2double(imread('./photos/largeDiff/brain/3.jpg'));
-% %
-% % % Resize:
-% % % -------
-% %
-% % img1 = imresize(img1,0.4);
-% % img2 = imresize(img2,0.4);
-% % img3 = imresize(img3,0.4);
-% %
-% % [r,c,d] = size(img1);
-%
-% % Allignment:
-% % % -----------
-% % Ioriginal = {};
-% % Ioriginal{1} = img1;
-% % Ioriginal{2} = img2;
-% % Ioriginal{3} = img3;
-%
-% %% set parameters
-% feature_method='sift';
-% estimate_method='RANSAC';
-% projection_type='homography'; % 'translation','euclidean','affine','homography'
-% fusion_method='mean';
-% minimal_sharpness = 0.9;
-% single_bracket_name='brain';
-% saveStuff = false;
-% plotStuff = true;
-% %% load data info
-% stack_folder='./photos/largeDiff';
-% [bracket_names]=read_subfolders(stack_folder);
-% bracketName=find(~cellfun('isempty',strfind(bracket_names,single_bracket_name)));
-% Ioriginal = read_focus_bracket(stack_folder, bracket_names{bracketName(1)});
-% [row, col, color, Nimages] = size(Ioriginal);
-% %take only part of the images
-% % pickIndex=[4 2 3 5 6];
-% % pickIndex=[4 3 5];
-% pickIndex=1:Nimages;
-% Ioriginal=Ioriginal(:,:,:,pickIndex);
-% Nimages = size(Ioriginal,4);
-%
-% %% align images - single alignment
-% % [sharpIndex, indexByRankOfSharpness, relativeSharpness] = choose_sharpest_image(Ioriginal);
-% Nimages = size(Ioriginal,4);
-% Igray = imarray2gray(Ioriginal);
-% %transform estimation
-% if strcmpi(feature_method,'sift')
-%   [featureData]=sift_extract_features(Igray);
-%   if strcmpi(estimate_method,'ransac')
-%     [projectionMatrices, featureData]= ...
-%       ransac_estimate_transformation_sequential(featureData, projection_type, 1);
-%   else
-%     error('not implemented')
-%   end
-% elseif strcmpi(feature_method,'latch')
-%   [featureData]=latch_extract_features(Igray);
-%   if strcmpi(estimate_method,'ransac')
-%     [projectionMatrices, featureData]= ...
-%       ransac_estimate_transformation_sequential(featureData, projection_type, sharpIndex);
-%   else
-%     error('not implemented')
-%   end
-% elseif strcmpi(feature_method,'ecc')
-%   projectionMatrices=ecc_estimate_transformation(Igray, projection_type);
-% else
-%   error('not implemented')
-% end
-% %backwarp
-% [Iwarped, supportPixels] = ...
-%   backwarp_to_ref_iat(Ioriginal, projectionMatrices, projection_type, 1);
-% % Icropped = crop_full_support(Iwarped, supportPixels);
-%
-%
+
 
 
 % Load images:
 % % -----------
-img1 = im2double(imread('./photos/largeDiff/dog/1.jpg'));
-img2 = im2double(imread('./photos/largeDiff/dog/2.jpg'));
-img3 = im2double(imread('./photos/largeDiff/dog/3.jpg'));
+img1 = im2double(imread('./photos/largeDiff/tal/1.jpg'));
+img2 = im2double(imread('./photos/largeDiff/tal/2.jpg'));
+img3 = im2double(imread('./photos/largeDiff/flower4/3.jpg'));
 
 % Resize:
 % -------
@@ -148,7 +72,7 @@ for i = 0: 0.2: 0.8
     
 end
 %%
-depthMap3 = repmat(maskFilled, [1,1,3]);
+depthMap3 = depth2;
 
 % figure; imshow(depth);
 background = (1-depthMap3).*img1;
