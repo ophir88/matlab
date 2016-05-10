@@ -3,9 +3,9 @@
 
 % Load images:
 % % -----------
-img1 = im2double(imread('./photos/largeDiff/tal/1.jpg'));
-img2 = im2double(imread('./photos/largeDiff/tal/2.jpg'));
-img3 = im2double(imread('./photos/largeDiff/flower4/3.jpg'));
+img1 = im2double(imread('./photos/largeDiff/flower1/1.jpg'));
+img2 = im2double(imread('./photos/largeDiff/flower1/2.jpg'));
+% img3 = im2double(imread('./photos/fromOwl/owl/3.jpg'));
 
 % Resize:
 % -------
@@ -14,9 +14,9 @@ img3 = im2double(imread('./photos/largeDiff/flower4/3.jpg'));
 % img2 = imresize(Iwarped(:,:,:,2),0.4);
 % img3 = imresize(Iwarped(:,:,:,3),0.4);
 
-img1 = imresize(img1 ,0.3);
-img2 = imresize(img2,0.3);
-img3 = imresize(img3,0.3);
+img1 = imresize(img1 ,0.2);
+img2 = imresize(img2,0.2);
+% img3 = imresize(img3,0.2);
 [r,c,d] = size(img1);
 
 % Allignment:
@@ -24,11 +24,15 @@ img3 = imresize(img3,0.3);
 imgs = {};
 imgs{1} = img1;
 imgs{2} = img2;
-imgs{3} = img3;
+% imgs{3} = img3;
 %
 imgsTransformed = sift_estimate_transformation(imgs);
 [img2, SUPPORT] = iat_inverse_warping(img2, imgsTransformed{2}.T, 'homography', 1:c, 1:r);
-[img3, SUPPORT] = iat_inverse_warping(img3, imgsTransformed{3}.T, 'homography', 1:c, 1:r);
+
+% [img3, SUPPORT] = iat_inverse_warping(img3, imgsTransformed{3}.T, 'homography', 1:c, 1:r);
+img1 = img1(10:r-10, 10: c-10, :);
+img2 = img2(10:r-10, 10: c-10, :);
+% img3 = img3(10:r-10, 10: c-10, :);
 
 %% Depth map:
 % ----------
@@ -72,7 +76,8 @@ for i = 0: 0.2: 0.8
     
 end
 %%
-depthMap3 = depth2;
+depthMap3 = depth3;
+[r,c,d] = size(img1);
 
 % figure; imshow(depth);
 background = (1-depthMap3).*img1;
