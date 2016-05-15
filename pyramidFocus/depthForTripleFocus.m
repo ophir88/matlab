@@ -51,7 +51,9 @@ for i = 0 : 4
 end
 
 %%
-maxLabel = max(max(lables));
+maxLabel1 = max(max(lables));
+maxLabel2 = max(max(lables2));
+
 % For each lable group, we find the mean luminance, and set the whole
 % segment to it's matching LUT value.
 segmentedImg = zeros(r,c);
@@ -60,66 +62,42 @@ mean2 = zeros(r,c);
 mean3 = zeros(r,c);
 numOfNonZero1 = zeros(r,c);
 numOfNonZero2 = zeros(r,c);
-
-% meanDiff = zeros(r,c);
-
-var1 = zeros(r,c);
-var2 = zeros(r,c);
-% imgDiff = img2Laplace - img1Laplace + 1;
-
-% depths = normalize(depths);
-% logicalMap = imgGray1 > 0.2;
-for i = 0: maxLabel
-    
+for i = 0: maxLabel1
     indexs = (lables == i);
-    
-    %     meanIndexs = logical(indexs.*logicalMap);
-    %     indexs5 = repmat(meanIndexs,[1,1,5]);
-    %
     numOfInd = sum(sum(indexs));
     if(numOfInd > 0 )
-        foundLablesInSecondImg = lables2(indexs);
-        mostFrequentLable = mode(foundLablesInSecondImg);
-        indexs2 = (lables2 == mostFrequentLable);
-
-%         input('');
-    numOfInd2 = sum(sum(indexs2));
-
-        numOfNonZero1(indexs) = sum(img1Laplace(indexs) > 0.1)./numOfInd;
-        numOfNonZero2(indexs2) = sum(img2Laplace(indexs2) > 0.1)./numOfInd2;
-        
+        numOfNonZero1(indexs) = sum(img1Laplace(indexs) > 0.01)./numOfInd;
         power1 = mean(mean(img1Laplace(indexs)));
-        power2 = mean(mean(img2Laplace(indexs2)));
-%         power3 = mean(mean(img3Laplace(indexs)));
-        
-        %         diff = mean(mean(imgDiff(indexs)));
-        %                 power3 = mean(mean(img3Laplace(indexs)));
-        
-        %         if (abs(power1 - power2) > 0.2)
-        %             if (power1 >= power2)
-        %                 segmentedImg(indexs) = 1;
-        %             else
-        %                 segmentedImg(indexs) = 0;
-        %
-        %             end
-        %         else
-        %             segmentedImg(indexs) = power1./(0.5*power2 + 0.5*power3);
-        segmentedImg(indexs) = power1./(power2);
-%         figure(1); imshow(segmentedImg);
-        
         mean1(indexs) = power1;
-        mean2(indexs2) = power2;
-%         mean3(indexs) = power3;
-        
-        %             meanDiff(indexs) = diff;
-%         indexs3d = repmat(indexs, [1,1,3]);
-%         var1(indexs) = var(img1(indexs3d));
-%         var2(indexs) = var(img2(indexs3d));
-%             input('');
-
-        %         end
     end
 end
+for i = 0: maxLabel2
+    indexs = (lables2 == i);
+    numOfInd = sum(sum(indexs));
+    if(numOfInd > 0 )
+        numOfNonZero2(indexs) = sum(img2Laplace(indexs) > 0.01)./numOfInd;
+        power2 = mean(mean(img2Laplace(indexs)));
+        mean2(indexs) = power2;
+    end
+end
+
+% for i = 0: maxLabel
+%     indexs = (lables == i);
+%     numOfInd = sum(sum(indexs));
+%     if(numOfInd > 0 )
+%         foundLablesInSecondImg = lables2(indexs);
+%         mostFrequentLable = mode(foundLablesInSecondImg);
+%         indexs2 = (lables2 == mostFrequentLable);
+%         numOfInd2 = sum(sum(indexs2));
+%         numOfNonZero1(indexs) = sum(img1Laplace(indexs) > 0.01)./numOfInd;
+%         numOfNonZero2(indexs2) = sum(img2Laplace(indexs2) > 0.01)./numOfInd2;
+%         power1 = mean(mean(img1Laplace(indexs)));
+%         power2 = mean(mean(img2Laplace(indexs2)));
+%         segmentedImg(indexs) = power1./(power2);
+%         mean1(indexs) = power1;
+%         mean2(indexs2) = power2;
+%     end
+% end
 %%
 segmentedImg2 = segmentedImg.*normalize(numOfNonZero1)./(normalize(numOfNonZero2));
 %%
@@ -144,34 +122,34 @@ figure;
 ax1=subplot(2,4,1);
 imshow(normalize(mean1));
 title('mean1');
-ax2=subplot(2,4,2);
-imshow(normalize(var1));
-title('var1');
+% ax2=subplot(2,4,2);
+% imshow(normalize(var1));
+% title('var1');
 
 ax3=subplot(2,4,3);
-imshow(numOfNonZero1);
+imshow((numOfNonZero1));
 title('nonzero1');
 
-ax4=subplot(2,4,4);
-imshow(normalize(grad1Erode));
-title('grad1');
+% ax4=subplot(2,4,4);
+% imshow(normalize(grad1Erode));
+% title('grad1');
 
 ax5=subplot(2,4,5);
 imshow(normalize(mean2));
 title('mean2');
 
-ax6=subplot(2,4,6);
-imshow(normalize(var2));
-title('var2');
+% ax6=subplot(2,4,6);
+% imshow(normalize(var2));
+% title('var2');
 
 ax7=subplot(2,4,7);
-imshow(numOfNonZero2);
+imshow((numOfNonZero2));
 title('nonzero1');
-
-ax8=subplot(2,4,8);
-imshow(normalize(grad2Erode));
-title('grad1');
-linkaxes([ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8],'xy')
+% 
+% ax8=subplot(2,4,8);
+% imshow(normalize(grad2Erode));
+% title('grad1');
+linkaxes([ax1  ax3  ax5  ax7 ],'xy')
 %%
 maskFilled = 1 - imfill(1 - segmentedImg);
 
@@ -213,7 +191,7 @@ depthW = wlsFilter(depth, 1, 1.2, img1Gray);
 
 %%
 normalizedDepth = normalize(depthW);
-normalizedDepth = remapInterpolation(normalizedDepth, 2 , 2.5);
+normalizedDepth = remapInterpolation(normalizedDepth, 0 , 2.3);
 figure; imshow(normalizedDepth);
 depth3 = repmat(normalizedDepth, [1,1,3]);
 

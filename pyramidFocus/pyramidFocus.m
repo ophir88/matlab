@@ -88,12 +88,12 @@ background = (1-depthMap3).*img1;
 
 
 backgroundTop = pyramidBlur(background);
-backgroundTop = pyramidBlur(backgroundTop);
+% backgroundTop = pyramidBlur(backgroundTop);
 
 % fix black (hole) diffusion.
 
 backgroundBottom = pyramidBlur(1-depthMap3);
-backgroundBottom = pyramidBlur(backgroundBottom);
+% backgroundBottom = pyramidBlur(backgroundBottom);
 
 background = backgroundTop./backgroundBottom;
 background = imresize(background , [r c]);
@@ -110,11 +110,12 @@ finalImage = background + foreGround;
 % finalImage = pyrDetails(finalImage, 1.3);
 
 %%
+amount = 1;
 figure;
 ax1=subplot(1,2,1);
 imshow(img1);
 ax2=subplot(1,2,2);
-imshow(finalImage);
+imshow(finalImage.*amount + img1.*(1-amount));
 % ax3=subplot(1,3,3);
 % imshow(result);
 linkaxes([ax1 ax2],'xy')
