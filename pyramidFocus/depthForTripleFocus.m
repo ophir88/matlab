@@ -6,8 +6,8 @@ function [ depth ] = depthForTripleFocus( img1,img2, img3)
 
 
 ratio = 1;
-kernelsize = 4;
-maxdist = 10;
+kernelsize = 3;
+maxdist = 8;
 [Iseg, lables] = vl_quickseg(img1, ratio, kernelsize, maxdist);
 [Iseg2, lables2] = vl_quickseg(img2, ratio, kernelsize, maxdist);
 
@@ -66,7 +66,7 @@ for i = 0: maxLabel1
     indexs = (lables == i);
     numOfInd = sum(sum(indexs));
     if(numOfInd > 0 )
-        numOfNonZero1(indexs) = sum(img1Laplace(indexs) > 0.01)./numOfInd;
+%         numOfNonZero1(indexs) = sum(img1Laplace(indexs) > 0.01)./numOfInd;
         power1 = mean(mean(img1Laplace(indexs)));
         mean1(indexs) = power1;
     end
@@ -75,27 +75,83 @@ for i = 0: maxLabel2
     indexs = (lables2 == i);
     numOfInd = sum(sum(indexs));
     if(numOfInd > 0 )
-        numOfNonZero2(indexs) = sum(img2Laplace(indexs) > 0.01)./numOfInd;
+%         numOfNonZero2(indexs) = sum(img2Laplace(indexs) > 0.01)./numOfInd;
         power2 = mean(mean(img2Laplace(indexs)));
         mean2(indexs) = power2;
     end
 end
 
-% for i = 0: maxLabel
+% %%
+% % segmentedImg(isnan(segmentedImg)) = 0;
+% % segmentedImg(isinf(segmentedImg)) = 0;
+% maxLabel1 = max(max(lables));
+% maxLabel2 = max(max(lables2));
+% segmentedImg = zeros(r,c);
+% R1 = Iseg(:,:,1);
+% G1 = Iseg(:,:,2);
+% B1 = Iseg(:,:,3);
+% R2 = Iseg2(:,:,1);
+% G2 = Iseg2(:,:,2);
+% B2 = Iseg2(:,:,3);
+% for i = 0: maxLabel1
+%     
 %     indexs = (lables == i);
+%     r1 = unique((R1(indexs)));
+%     g1 = unique((G1(indexs)));
+%     b1 = unique((B1(indexs)));
+% 
+% %     color(:)
 %     numOfInd = sum(sum(indexs));
 %     if(numOfInd > 0 )
 %         foundLablesInSecondImg = lables2(indexs);
-%         mostFrequentLable = mode(foundLablesInSecondImg);
-%         indexs2 = (lables2 == mostFrequentLable);
-%         numOfInd2 = sum(sum(indexs2));
-%         numOfNonZero1(indexs) = sum(img1Laplace(indexs) > 0.01)./numOfInd;
-%         numOfNonZero2(indexs2) = sum(img2Laplace(indexs2) > 0.01)./numOfInd2;
+%         uniqeLabels = unique(foundLablesInSecondImg);
+% %         numel(unique(foundLablesInSecondImg))
+%         [a,b]=hist(foundLablesInSecondImg,max(uniqeLabels));
+%         [amount, I] = sort(a,'descend' );
+%         if numel(uniqeLabels) > 3
+%             maxIndex = 3;
+%             totalAmount = amount(1)+amount(2)+amount(3);
+%         else
+%             maxIndex = numel(uniqeLabels);
+%             totalAmount = 0;
+%             for j = 1 : numel(uniqeLabels)
+%                 totalAmount = totalAmount + amount(j);
+%             end
+% 
+%         end
+% %                 percentage = totalAmount/numOfInd
+% 
+%         power2 = 0;
+%         totalDistance =  0;
+%         for sortedIndex = 1 : maxIndex
+%             newLabel = I(sortedIndex);
+%             strength = amount(sortedIndex)/totalAmount;
+%             indexes = (lables2 == newLabel);
+%             r2 = unique((R2(indexes)));
+%             g2 = unique((G2(indexes)));
+%             b2 = unique((B2(indexes)));
+%             distance = sqrt((r1-r2)^2+(g1-g2)^2+(b1-b2)^2);
+%             distancePower = exp(-(distance)/(2*0.1^2));
+%             totalDistance = totalDistance + distancePower;
+%             power2 = power2 + mean(mean(img2Laplace(indexes)))*strength*distancePower;
+%         end
+%         power2 = power2/totalDistance;
+% %         mostFrequentLable = mode(foundLablesInSecondImg);
+% %         indexs2 = (lables2 == mostFrequentLable);
+% %         numOfInd2 = sum(sum(indexs2));
+% %         numOfNonZero1(indexs) = sum(img1Laplace(indexs) > 0.01)./numOfInd;
+% %         numOfNonZero2(indexs2) = sum(img2Laplace(indexs2) > 0.01)./numOfInd2;
 %         power1 = mean(mean(img1Laplace(indexs)));
-%         power2 = mean(mean(img2Laplace(indexs2)));
-%         segmentedImg(indexs) = power1./(power2);
-%         mean1(indexs) = power1;
-%         mean2(indexs2) = power2;
+% %         power2
+% %                             input('');
+% 
+% %         power2 = mean(mean(img2Laplace(indexs2)));
+% %         numOfInd
+% %         power1./power2
+%         segmentedImg(indexs) = power1./power2;
+% %         input('');
+% %         mean1(indexs) = power1;
+% %         mean2(indexs2) = power2;
 %     end
 % end
 %%
@@ -140,7 +196,7 @@ title('mean2');
 
 % ax6=subplot(2,4,6);
 % imshow(normalize(var2));
-% title('var2');
+    % title('var2');
 
 ax7=subplot(2,4,7);
 imshow((numOfNonZero2));
@@ -179,19 +235,27 @@ maskFilled = 1 - imfill(1 - segmentedImg);
 %
 % epsilon = 0.00001;
 % depth = 3*imgs{1}./(imgs{1} + imgs{2} + imgs{3}  + epsilon);
-% figure; imshow(depth);
-depth = normalize(segmentedImg);
-meanVal = mean(mean(depth));
-% depth = remapInterpolation(depth, (meanVal*10-5), 1);
-figure; imshow(depth);
-
-depthW = wlsFilter(depth, 1, 1.2, img1Gray);
-% depthWBottom = wlsFilter(1-depth, 1, 1.2, img1Gray);
-% depthWB = depthW./(depthWBottom + 0.00001);
 
 %%
-normalizedDepth = normalize(depthW);
-normalizedDepth = remapInterpolation(normalizedDepth, 0 , 2.3);
+% depth1 = normalize(mean1);
+depth1W = wlsFilter(mean1, 1.5, 1.2, img1Gray);
+% depth2 = normalize(mean2);
+depth2W = wlsFilter(mean2, 1.5, 1.2, img1Gray);
+depth = depth1W./depth2W;
+%%
+% figure; imshow(depth);
+% depth = normalize(segmentedImg);
+% meanVal = mean(mean(depth));
+% % depth = remapInterpolation(depth, (meanVal*10-5), 1);
+% figure; imshow(depth);
+% 
+% depthW = wlsFilter(depth, 1, 1.2, img1Gray);
+% % depthWBottom = wlsFilter(1-depth, 1, 1.2, img1Gray);
+% % depthWB = depthW./(depthWBottom + 0.00001);
+
+%%
+normalizedDepth = normalize(depth);
+normalizedDepth = remapInterpolation(normalizedDepth, 1.5 , 1.5);
 figure; imshow(normalizedDepth);
 depth3 = repmat(normalizedDepth, [1,1,3]);
 

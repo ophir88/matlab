@@ -3,8 +3,8 @@
 
 % Load images:
 % % -----------
-img1 = im2double(imread('./photos/largeDiff/flower1/1.jpg'));
-img2 = im2double(imread('./photos/largeDiff/flower1/2.jpg'));
+img1 = im2double(imread('./photos/fruit/1.jpg'));
+img2 = im2double(imread('./photos/fruit/2.jpg'));
 % img3 = im2double(imread('./photos/fromOwl/owl/3.jpg'));
 
 % Resize:
