@@ -238,9 +238,9 @@ maskFilled = 1 - imfill(1 - segmentedImg);
 
 %%
 % depth1 = normalize(mean1);
-depth1W = wlsFilter(mean1, 1.5, 1.2, img1Gray);
+depth1W = wlsFilter(mean1, 1.5, 1.2, rgb2gray(Iseg));
 % depth2 = normalize(mean2);
-depth2W = wlsFilter(mean2, 1.5, 1.2, img1Gray);
+depth2W = wlsFilter(mean2, 1.5, 1.2, rgb2gray(Iseg));
 depth = depth1W./depth2W;
 %%
 % figure; imshow(depth);
@@ -251,11 +251,11 @@ depth = depth1W./depth2W;
 % 
 % depthW = wlsFilter(depth, 1, 1.2, img1Gray);
 % % depthWBottom = wlsFilter(1-depth, 1, 1.2, img1Gray);
-% % depthWB = depthW./(depthWBottom + 0.00001);
+% % depthWB = depthW./(epthWBottom + 0.00001);
 
 %%
 normalizedDepth = normalize(depth);
-normalizedDepth = remapInterpolation(normalizedDepth, 1.5 , 1.5);
+normalizedDepth = remapInterpolation(normalizedDepth, 3.5 , 1.1);
 figure; imshow(normalizedDepth);
 depth3 = repmat(normalizedDepth, [1,1,3]);
 
