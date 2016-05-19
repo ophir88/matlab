@@ -255,7 +255,7 @@ depth = depth1W./depth2W;
 
 %%
 normalizedDepth = normalize(depth);
-normalizedDepth = remapInterpolation(normalizedDepth, 3.5 , 1.1);
+normalizedDepth = remapInterpolation(normalizedDepth,1 , 2.3);
 figure; imshow(normalizedDepth);
 depth3 = repmat(normalizedDepth, [1,1,3]);
 

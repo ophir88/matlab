@@ -3,8 +3,8 @@
 
 % Load images:
 % % -----------
-img1 = im2double(imread('./photos/mate2/1.jpg'));
-img2 = im2double(imread('./photos/mate2/2.jpg'));
+img1 = im2double(imread('./photos/penHolder/1.jpg'));
+img2 = im2double(imread('./photos/penHolder/3.jpg'));
 % img3 = im2double(imread('./photos/fromOwl/owl/3.jpg'));
 
 % Resize:
@@ -41,87 +41,97 @@ depthMap3 = depthForTripleFocus(img1, img2, img3);
 
 %%
 depthMap3 = depth3;
+
 finalImageCombined = zeros(size(img1));
 mapSoFar = zeros(size(img1));
+% imgLum = rgb2ycbcr(img1);
+% imgLum = imgLum(:,:,1);
+% imgLum = repmat(imgLum, [1,1,3]);
+pentKernel = imread('pentKernel.jpg');
 
+pentKernel = pentKernel(:,:,1);
+pentKernel = imresize(pentKernel,[15 15]);
 % finalImageCombined2 = zeros(size(img1));
 
 for i = 0: 0.1: 0.9
-    i
     currentImageIndx = depthMap3(:,:,1) > i & depthMap3(:,:,1) <= i+0.1;
     currentImageIndx = repmat(currentImageIndx, [1,1,3]);
     mapSoFar = mapSoFar + currentImageIndx;
     
     currentImage = img1;
     currentImage(~currentImageIndx) = 0;
-    
-%     kernel = (1-(i+0.2))*15
-    %     input('');
+%     currentLum = imgLum;
+%     currentLum(~currentImageIndx) = 0;
+
+    currentKernel = double(imresize(pentKernel,1-i-0.1));
     if (i >= 0.9)
         currentLayerResult = currentImage;
     else
-%         H = fspecial('disk',kernel);
-            window = 15 - i*10
-                Hgauss = fspecial('gaussian',floor(15 - i*10) , (1-(i+0.1))*10);
-
-        %         H2 = fspecial('disk',kernel*1.3);
-        
-        blurred = imfilter(currentImage,Hgauss,'replicate');
         backGroundBlurred = double(currentImageIndx);
+
+        luminanceArea = currentImage;
+%         currentImage(currentLum>=0.8) = currentImage(currentLum>=0.8).*2;
         
-        backGroundBlurred1 = imfilter(backGroundBlurred,Hgauss,'replicate');
-        %         backGroundBlurred2 = imfilter(backGroundBlurred,H2,'replicate');
+        %         reguler blur:
+        %         ------------
+%         Hgauss = fspecial('gaussian',floor(15 - i*10) , (1-(i+0.1))*10);
+%         blurred = imfilter(currentImage,Hgauss,'replicate');
+%         
+%         backGroundBlurred1 = imfilter(backGroundBlurred,Hgauss,'replicate');
+%         currentLayerResult = blurred./backGroundBlurred1;
+        %         conv blur:
+        %         ------------
         
-        currentLayerResult = blurred./backGroundBlurred1;
-        %         currentLayerResult2 = blurred./backGroundBlurred2;
+%          luminanceArea(:,:,1) = conv2(luminanceArea(:,:,1),currentKernel,'same');
+%         luminanceArea(:,:,2) = conv2(luminanceArea(:,:,2),currentKernel,'same');
+%         luminanceArea(:,:,3) = conv2(luminanceArea(:,:,3),currentKernel,'same');
+%         luminanceMask = double(luminanceArea>0);
+%         luminanceMask(:,:,1) = conv2(luminanceMask(:,:,1),currentKernel,'same');
+%         luminanceMask(:,:,2) = conv2(luminanceMask(:,:,2),currentKernel,'same');
+%         luminanceMask(:,:,3) = conv2(luminanceMask(:,:,3),currentKernel,'same');
+%         luminanceArea = luminanceArea./luminanceMask;
+%         luminanceArea(isnan(luminanceArea)) = 0;
+
+        currentImage(:,:,1) = conv2(currentImage(:,:,1),currentKernel,'same');
+        currentImage(:,:,2) = conv2(currentImage(:,:,2),currentKernel,'same');
+        currentImage(:,:,3) = conv2(currentImage(:,:,3),currentKernel,'same');
+
+        backGroundBlurred(:,:,1) = conv2(backGroundBlurred(:,:,1),currentKernel,'same');
+        backGroundBlurred(:,:,2) = conv2(backGroundBlurred(:,:,2),currentKernel,'same');
+        backGroundBlurred(:,:,3) = conv2(backGroundBlurred(:,:,3),currentKernel,'same');
+        currentLayerResult = currentImage./backGroundBlurred;
         
+%         currentLayerResult = currentLayerResult + luminanceArea.*0.1;
+       
     end
     currentLayerResult(~currentImageIndx) = 0;
     currentLayerResult(isnan(currentLayerResult)) = 0;
-    
-    %     figure(1);
-    %     ax1=subplot(1,3,1);
-    %     imshow(finalImageCombined);
-    %     ax2=subplot(1,3,2);
-    %     imshow(currentLayerResult);
-    %     ax3=subplot(1,3,3);
-    %     imshow(currentLayerResult+finalImageCombined);
-    %     linkaxes([ax1 ax2 ax3],'xy')
-    %   currentLayerResult(~currentImageIndx) = 0;
-    %     figure(2); imshow(currentLayerResult);
-    %     input('');
-    %     currentLayerResult(isnan(currentLayerResult)) = 0;
-    %     currentLayerResult(~currentImageIndx) = 0;
-    %     currentLayerResult2(isnan(currentLayerResult2)) = 0;
-    %     intersection = logical(finalImageCombined.*currentLayerResult);
     finalImageCombined = finalImageCombined + currentLayerResult;
     
-    %     intersectionImg = finalImageCombined.*intersection./2;
-    %     H2 = fspecial('average',1);
-    
-    %     intersectionImg = imfilter(intersectionImg,H2,'replicate');
-    %     intersectionImgBack = imfilter(double(intersection),H2,'replicate');
-    %     intersectionImgFinal = intersectionImg./intersectionImgBack;
-    %     intersectionImgFinal(isnan(intersectionImgFinal))=0;
-    %     intersectionImgFinal(~intersection) = 0;
-    %     finalImageCombined(intersection) = 0;
-    %     finalImageCombined = finalImageCombined + intersectionImgFinal;
-    %     finalImageCombined2 = finalImageCombined2 + currentLayerResult2;
-    %         input('');
     H2 = fspecial('disk',1.5);
     Hgauss2 = fspecial('gaussian',3, 3);
     if (i < 0.9)
+%             currentKernel = double(imresize(pentKernel,(1-i)/2));
+% 
+%         finalImageCombinedBlurred = zeros(size(mapSoFar));
+%         finalImageBackground = zeros(size(mapSoFar));
+%         finalImageCombinedBlurred(:,:,1) = conv2(finalImageCombined(:,:,1),currentKernel,'same');
+%         finalImageCombinedBlurred(:,:,2) = conv2(finalImageCombined(:,:,2),currentKernel,'same');
+%         finalImageCombinedBlurred(:,:,3) = conv2(finalImageCombined(:,:,3),currentKernel,'same');
+% 
+%         finalImageBackground(:,:,1) = conv2(mapSoFar(:,:,1),currentKernel,'same');
+%         finalImageBackground(:,:,2) = conv2(mapSoFar(:,:,2),currentKernel,'same');
+%         finalImageBackground(:,:,3) = conv2(mapSoFar(:,:,3),currentKernel,'same');
+        
         finalImageBackground = imfilter(mapSoFar,Hgauss2,'replicate');
         finalImageCombinedBlurred = imfilter(finalImageCombined,Hgauss2,'replicate');
         
         finalImageCombined = finalImageCombinedBlurred./finalImageBackground;
         finalImageCombined(~mapSoFar) = 0;
-            finalImageCombined(isnan(finalImageCombined)) = 0;
-
-    else
-
-%         finalImageCombined = finalImageCombined;
+        finalImageCombined(isnan(finalImageCombined)) = 0;
+        
     end
+        
     
     
     figure(6);
@@ -130,7 +140,7 @@ for i = 0: 0.1: 0.9
     ax2=subplot(1,2,2);
     imshow(double(currentImageIndx));
     linkaxes([ax1 ax2],'xy')
-    input('');
+%     input('');
     
 end
 %%
