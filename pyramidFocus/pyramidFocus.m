@@ -3,8 +3,8 @@
 
 % Load images:
 % % -----------
-img1 = im2double(imread('./photos/penHolder/1.jpg'));
-img2 = im2double(imread('./photos/penHolder/3.jpg'));
+img1 = im2double(imread('./photos/cup/1.jpg'));
+img2 = im2double(imread('./photos/cup/2.jpg'));
 % img3 = im2double(imread('./photos/fromOwl/owl/3.jpg'));
 
 % Resize:
@@ -44,13 +44,16 @@ depthMap3 = depth3;
 
 finalImageCombined = zeros(size(img1));
 mapSoFar = zeros(size(img1));
-% imgLum = rgb2ycbcr(img1);
-% imgLum = imgLum(:,:,1);
-% imgLum = repmat(imgLum, [1,1,3]);
-pentKernel = imread('pentKernel.jpg');
+imgLum = rgb2ycbcr(img1);
+imgLum = imgLum(:,:,1);
+imgLum = repmat(imgLum, [1,1,3]);
+pentKernel = im2double(imread('pentKernel.jpg'));
 
 pentKernel = pentKernel(:,:,1);
-pentKernel = imresize(pentKernel,[15 15]);
+pentKernelHigh = imresize(pentKernel,[20 20]);
+pentKernelHigh = pentKernelHigh./(sum(sum(pentKernelHigh)));
+pentKernel = imresize(pentKernel,[20 20]);
+
 % finalImageCombined2 = zeros(size(img1));
 
 for i = 0: 0.1: 0.9
@@ -60,18 +63,17 @@ for i = 0: 0.1: 0.9
     
     currentImage = img1;
     currentImage(~currentImageIndx) = 0;
-%     currentLum = imgLum;
-%     currentLum(~currentImageIndx) = 0;
+    currentLum = imgLum;
+    currentLum(~currentImageIndx) = 0;
 
-    currentKernel = double(imresize(pentKernel,1-i-0.1));
+    currentKernel = double(imresize(pentKernel,(1-i-0.1)));
     if (i >= 0.9)
         currentLayerResult = currentImage;
     else
         backGroundBlurred = double(currentImageIndx);
 
-        luminanceArea = currentImage;
-%         currentImage(currentLum>=0.8) = currentImage(currentLum>=0.8).*2;
         
+        %         figure(2); imshow(luminanceArea./luminanceAreaMask);
         %         reguler blur:
         %         ------------
 %         Hgauss = fspecial('gaussian',floor(15 - i*10) , (1-(i+0.1))*10);
@@ -100,7 +102,8 @@ for i = 0: 0.1: 0.9
         backGroundBlurred(:,:,2) = conv2(backGroundBlurred(:,:,2),currentKernel,'same');
         backGroundBlurred(:,:,3) = conv2(backGroundBlurred(:,:,3),currentKernel,'same');
         currentLayerResult = currentImage./backGroundBlurred;
-        
+%         currentLayerResult(luminanceAdd>0) = currentLayerResult(luminanceAdd>0).*0.3;
+%         currentLayerResult = currentLayerResult + luminanceAdd.*0.01;
 %         currentLayerResult = currentLayerResult + luminanceArea.*0.1;
        
     end
@@ -108,8 +111,8 @@ for i = 0: 0.1: 0.9
     currentLayerResult(isnan(currentLayerResult)) = 0;
     finalImageCombined = finalImageCombined + currentLayerResult;
     
-    H2 = fspecial('disk',1.5);
-    Hgauss2 = fspecial('gaussian',3, 3);
+%     H2 = fspecial('disk',);
+    Hgauss2 = fspecial('gaussian',5, 10);
     if (i < 0.9)
 %             currentKernel = double(imresize(pentKernel,(1-i)/2));
 % 
@@ -130,6 +133,37 @@ for i = 0: 0.1: 0.9
         finalImageCombined(~mapSoFar) = 0;
         finalImageCombined(isnan(finalImageCombined)) = 0;
         
+    else 
+        lastIndex = depthMap3(:,:,1) < 0.2;
+        lastIndex = repmat(lastIndex, [1,1,3]);
+        currentImage = img1;
+        currentImage(~lastIndex) = 0;
+        
+        currentLum = imgLum;
+        currentLum(~lastIndex) = 0;
+        luminanceArea = currentImage;
+        luminanceArea(currentLum<=0.9) = 0;
+        lumMask = medfilt2(imgradient(luminanceArea(:,:,1)));
+        
+        luminanceArea(:,:,1) = conv2(lumMask.*img1(:,:,1),pentKernelHigh,'same');
+        luminanceArea(:,:,2) = conv2(lumMask.*img1(:,:,2),pentKernelHigh,'same');
+        luminanceArea(:,:,3) = conv2(lumMask.*img1(:,:,3),pentKernelHigh,'same');
+%         figure; imshow(luminanceArea);
+%         figure; imshow(luminanceArea.*10);
+
+        luminanceAdd = luminanceArea;
+        luminanceAdd(isnan(luminanceAdd)) = 0;
+%         luminanceAdd = luminanceAdd.*3;
+        luminanceAdd(luminanceAdd>1) = 1;
+        luminanceAdd = luminanceAdd.*0.8;
+
+%         luminanceAdd(luminanceAdd>0.7) = luminanceAdd(luminanceAdd>0.7);
+%         luminanceAdd = luminanceAdd./255;
+        's'
+%         finalImageCombined = finalImageCombined.*(1-luminanceAdd.*10);
+%         finalImageCombined(luminanceAdd>0) = finalImageCombined(luminanceAdd>0).*luminanceAdd;
+
+        finalImageCombined = finalImageCombined -luminanceAdd.*finalImageCombined + luminanceAdd;
     end
         
     
@@ -138,7 +172,7 @@ for i = 0: 0.1: 0.9
     ax1=subplot(1,2,1);
     imshow(finalImageCombined);
     ax2=subplot(1,2,2);
-    imshow(double(currentImageIndx));
+    imshow(img1);
     linkaxes([ax1 ax2],'xy')
 %     input('');
     
