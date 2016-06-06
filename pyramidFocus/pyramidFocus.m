@@ -36,27 +36,28 @@ img2 = img2(10:r-10, 10: c-10, :);
 
 %% Depth map:
 % ----------
-depthMap3 = depthForTripleFocus(img1, img2, img3);
+tic
+depthMap3 = depthForTripleFocus(img1, img2);
 
+        wtime = toc
+        fprintf ( 1, '  MY_PROGRAM took %f seconds to run.\n', wtime );
 
 %%
-depthMap3 = depth3;
-
+% depthMap3 = depth4;
+tic
 finalImageCombined = zeros(size(img1));
 mapSoFar = zeros(size(img1));
 imgLum = rgb2ycbcr(img1);
 imgLum = imgLum(:,:,1);
 imgLum = repmat(imgLum, [1,1,3]);
 pentKernel = im2double(imread('pentKernel.jpg'));
-
+pentKernelOriginal = pentKernel;
 pentKernel = pentKernel(:,:,1);
-pentKernelHigh = imresize(pentKernel,[20 20]);
-pentKernelHigh = pentKernelHigh./(sum(sum(pentKernelHigh)));
+
 pentKernel = imresize(pentKernel,[20 20]);
 
-% finalImageCombined2 = zeros(size(img1));
-
 for i = 0: 0.1: 0.9
+    
     currentImageIndx = depthMap3(:,:,1) > i & depthMap3(:,:,1) <= i+0.1;
     currentImageIndx = repmat(currentImageIndx, [1,1,3]);
     mapSoFar = mapSoFar + currentImageIndx;
@@ -70,71 +71,33 @@ for i = 0: 0.1: 0.9
     if (i >= 0.9)
         currentLayerResult = currentImage;
     else
-        backGroundBlurred = double(currentImageIndx);
-
-        
-        %         figure(2); imshow(luminanceArea./luminanceAreaMask);
-        %         reguler blur:
-        %         ------------
-%         Hgauss = fspecial('gaussian',floor(15 - i*10) , (1-(i+0.1))*10);
-%         blurred = imfilter(currentImage,Hgauss,'replicate');
-%         
-%         backGroundBlurred1 = imfilter(backGroundBlurred,Hgauss,'replicate');
-%         currentLayerResult = blurred./backGroundBlurred1;
-        %         conv blur:
-        %         ------------
-        
-%          luminanceArea(:,:,1) = conv2(luminanceArea(:,:,1),currentKernel,'same');
-%         luminanceArea(:,:,2) = conv2(luminanceArea(:,:,2),currentKernel,'same');
-%         luminanceArea(:,:,3) = conv2(luminanceArea(:,:,3),currentKernel,'same');
-%         luminanceMask = double(luminanceArea>0);
-%         luminanceMask(:,:,1) = conv2(luminanceMask(:,:,1),currentKernel,'same');
-%         luminanceMask(:,:,2) = conv2(luminanceMask(:,:,2),currentKernel,'same');
-%         luminanceMask(:,:,3) = conv2(luminanceMask(:,:,3),currentKernel,'same');
-%         luminanceArea = luminanceArea./luminanceMask;
-%         luminanceArea(isnan(luminanceArea)) = 0;
-
         currentImage(:,:,1) = conv2(currentImage(:,:,1),currentKernel,'same');
         currentImage(:,:,2) = conv2(currentImage(:,:,2),currentKernel,'same');
         currentImage(:,:,3) = conv2(currentImage(:,:,3),currentKernel,'same');
-
+        
+        backGroundBlurred = double(currentImageIndx);
         backGroundBlurred(:,:,1) = conv2(backGroundBlurred(:,:,1),currentKernel,'same');
         backGroundBlurred(:,:,2) = conv2(backGroundBlurred(:,:,2),currentKernel,'same');
         backGroundBlurred(:,:,3) = conv2(backGroundBlurred(:,:,3),currentKernel,'same');
+        
         currentLayerResult = currentImage./backGroundBlurred;
-%         currentLayerResult(luminanceAdd>0) = currentLayerResult(luminanceAdd>0).*0.3;
-%         currentLayerResult = currentLayerResult + luminanceAdd.*0.01;
-%         currentLayerResult = currentLayerResult + luminanceArea.*0.1;
-       
     end
     currentLayerResult(~currentImageIndx) = 0;
     currentLayerResult(isnan(currentLayerResult)) = 0;
-    finalImageCombined = finalImageCombined + currentLayerResult;
+    finalImageCombined = finalImageCombined + currentLayerResult;   
     
-%     H2 = fspecial('disk',);
-    Hgauss2 = fspecial('gaussian',5, 10);
+    
     if (i < 0.9)
-%             currentKernel = double(imresize(pentKernel,(1-i)/2));
-% 
-%         finalImageCombinedBlurred = zeros(size(mapSoFar));
-%         finalImageBackground = zeros(size(mapSoFar));
-%         finalImageCombinedBlurred(:,:,1) = conv2(finalImageCombined(:,:,1),currentKernel,'same');
-%         finalImageCombinedBlurred(:,:,2) = conv2(finalImageCombined(:,:,2),currentKernel,'same');
-%         finalImageCombinedBlurred(:,:,3) = conv2(finalImageCombined(:,:,3),currentKernel,'same');
-% 
-%         finalImageBackground(:,:,1) = conv2(mapSoFar(:,:,1),currentKernel,'same');
-%         finalImageBackground(:,:,2) = conv2(mapSoFar(:,:,2),currentKernel,'same');
-%         finalImageBackground(:,:,3) = conv2(mapSoFar(:,:,3),currentKernel,'same');
-        
+        Hgauss2 = fspecial('gaussian',floor(10 - i*10), (10 - i*10)^2);
         finalImageBackground = imfilter(mapSoFar,Hgauss2,'replicate');
-        finalImageCombinedBlurred = imfilter(finalImageCombined,Hgauss2,'replicate');
-        
+        finalImageCombinedBlurred = imfilter(finalImageCombined,Hgauss2,'replicate');  
         finalImageCombined = finalImageCombinedBlurred./finalImageBackground;
         finalImageCombined(~mapSoFar) = 0;
         finalImageCombined(isnan(finalImageCombined)) = 0;
         
-    else 
-        lastIndex = depthMap3(:,:,1) < 0.2;
+    else
+        for highLightIndex = 0.3 : 0.3 : 0.6
+            lastIndex = depthMap3(:,:,1) > highLightIndex - 0.3 & depthMap3(:,:,1) < highLightIndex;
         lastIndex = repmat(lastIndex, [1,1,3]);
         currentImage = img1;
         currentImage(~lastIndex) = 0;
@@ -142,87 +105,42 @@ for i = 0: 0.1: 0.9
         currentLum = imgLum;
         currentLum(~lastIndex) = 0;
         luminanceArea = currentImage;
-        luminanceArea(currentLum<=0.9) = 0;
+        luminanceArea(currentLum<=0.90) = 0;
         lumMask = medfilt2(imgradient(luminanceArea(:,:,1)));
-        
-        luminanceArea(:,:,1) = conv2(lumMask.*img1(:,:,1),pentKernelHigh,'same');
-        luminanceArea(:,:,2) = conv2(lumMask.*img1(:,:,2),pentKernelHigh,'same');
-        luminanceArea(:,:,3) = conv2(lumMask.*img1(:,:,3),pentKernelHigh,'same');
-%         figure; imshow(luminanceArea);
-%         figure; imshow(luminanceArea.*10);
-
+        if (highLightIndex == 0.3)
+            kernelSize = 15;
+            highLightFactor = 0.95;
+        else
+            kernelSize = 10;
+            highLightFactor = 0.95;
+        end
+        img1Squared = img1.*img1;
+        pentKernelHigh = imresize(pentKernelOriginal,[kernelSize kernelSize]);
+        pentKernelHigh = pentKernelHigh./(sum(sum(pentKernelHigh)));
+        luminanceArea(:,:,1) = conv2(lumMask.*img1Squared(:,:,1),pentKernelHigh,'same');
+        luminanceArea(:,:,2) = conv2(lumMask.*img1Squared(:,:,2),pentKernelHigh,'same');
+        luminanceArea(:,:,3) = conv2(lumMask.*img1Squared(:,:,3),pentKernelHigh,'same');
+        luminanceArea = luminanceArea.^(1/2);
         luminanceAdd = luminanceArea;
         luminanceAdd(isnan(luminanceAdd)) = 0;
-%         luminanceAdd = luminanceAdd.*3;
         luminanceAdd(luminanceAdd>1) = 1;
-        luminanceAdd = luminanceAdd.*0.8;
-
-%         luminanceAdd(luminanceAdd>0.7) = luminanceAdd(luminanceAdd>0.7);
-%         luminanceAdd = luminanceAdd./255;
-        's'
-%         finalImageCombined = finalImageCombined.*(1-luminanceAdd.*10);
-%         finalImageCombined(luminanceAdd>0) = finalImageCombined(luminanceAdd>0).*luminanceAdd;
-
-        finalImageCombined = finalImageCombined -luminanceAdd.*finalImageCombined + luminanceAdd;
-    end
+%         luminanceAdd = luminanceAdd.*1.5;
+        finalImageCombined = finalImageCombined -luminanceAdd.*finalImageCombined + luminanceAdd.*highLightFactor;
+        end
         
-    
-    
-    figure(6);
+    end
+%     figure(7);
+%     ax1=subplot(1,2,1);
+%     imshow(finalImageCombined);
+%     ax2=subplot(1,2,2);
+%     imshow(img1);
+%     linkaxes([ax1 ax2],'xy')
+%     input('');
+end
+figure(7);
     ax1=subplot(1,2,1);
     imshow(finalImageCombined);
     ax2=subplot(1,2,2);
     imshow(img1);
     linkaxes([ax1 ax2],'xy')
-%     input('');
-    
-end
-%%
-depthMap3 = depth3;
-[r,c,d] = size(img1);
-
-% figure; imshow(depth);
-background = (1-depthMap3).*img1;
-
-% add highlight:
-% background = highlight(background, 1.1);
-% blur.
-
-
-backgroundTop = pyramidBlur(background);
-% backgroundTop = pyramidBlur(backgroundTop);
-
-% fix black (hole) diffusion.
-
-backgroundBottom = pyramidBlur(1-depthMap3);
-% backgroundBottom = pyramidBlur(backgroundBottom);
-
-background = backgroundTop./backgroundBottom;
-background = imresize(background , [r c]);
-background = background.*(1-depthMap3);
-background(isnan(background))=0;
-% Increase foreground details:
-% ---------------------------
-foreGround = depthMap3.*img1;
-foreGround = imresize(foreGround , [r c]);
-
-% Reattach foreground:
-% --------------------
-finalImage = background + foreGround;
-% finalImage = pyrDetails(finalImage, 1.3);
-
-%%
-amount = 1;
-figure;
-ax1=subplot(1,2,1);
-imshow(img1);
-ax2=subplot(1,2,2);
-imshow(finalImage.*amount + img1.*(1-amount));
-% ax3=subplot(1,3,3);
-% imshow(result);
-linkaxes([ax1 ax2],'xy')
-% imwrite(img1,'dogOriginal.jpg')
-%
-% imwrite(finalImage,'dogResult.jpg')
-
-'s';
+%     input(''); 
