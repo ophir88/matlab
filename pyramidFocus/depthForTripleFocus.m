@@ -38,8 +38,8 @@ img2Laplace = abs(imfilter(img2Gray,h,'replicate'))+abs(imfilter(img2Gray,h','re
 %     numOfInd = sum(sum(indexs));
 %     if(numOfInd > 0 )
 %         mean2(indexs) = mean(mean(img2Laplace(indexs)));
-% 
-%     
+%
+%
 %     end
 % end
 
@@ -47,12 +47,59 @@ img2Laplace = abs(imfilter(img2Gray,h,'replicate'))+abs(imfilter(img2Gray,h','re
 % % depth1W = wlsFilter(mean1, 1.5, 1.2, rgb2gray(Iseg));
 % % depth2W = wlsFilter(mean2, 1.5, 1.2, rgb2gray(Iseg));
 % % depth = depth1W./depth2W;
-% 
+%
 % %% Normalize and run through sigmoid
 % normalizedDepth = normalize(depth);
 % normalizedDepth = remapInterpolation(normalizedDepth,2 , 1.4);
 % figure; imshow(normalizedDepth);
 % depth3 = repmat(normalizedDepth, [1,1,3]);
+%% BLF
+dim = size(img1Laplace);
+B1 = zeros(dim);
+B2 = zeros(dim);
+
+w = 3;
+sigma_d = 2;
+sigma_r = 0.05;
+iterations = 130;
+C = ((img1Gray));
+[X,Y] = meshgrid(-w:w,-w:w);
+G = exp(-(X.^2+Y.^2)/(2*sigma_d^2));
+source1 = img1Laplace;
+source2 = img2Laplace;
+
+for iteration = 1 : iterations
+    iteration
+    for i  = 1 : r
+        for j = 1 : c
+            
+            
+            % Extract local region.
+            iMin = max(i-w,1);
+            iMax = min(i+w,dim(1));
+            jMin = max(j-w,1);
+            jMax = min(j+w,dim(2));
+            I1 = source1(iMin:iMax,jMin:jMax);
+            I2 = source2(iMin:iMax,jMin:jMax);
+            
+            % To compute weights from the color image
+            J = C(iMin:iMax,jMin:jMax);
+            
+            % Compute Gaussian intensity weights according to the color image
+            H = exp(-(J-C(i,j)).^2/(2*sigma_r^2));
+            
+            % Calculate bilateral filter response.
+            F = H.*G((iMin:iMax)-i+w+1,(jMin:jMax)-j+w+1);
+            B1(i,j) = sum(F(:).*I1(:))/sum(F(:));
+            B2(i,j) = sum(F(:).*I2(:))/sum(F(:));
+            
+        end
+    end
+    source1 = B1;
+    source2 = B2;
+    
+end
+
 
 %% WLS for the segmented means, according to the reference segmentation
 depth3W = wlsFilter(img1Laplace, 2, 1.3, rgb2gray(img1));
@@ -61,9 +108,9 @@ depth = depth3W./depth4W;
 
 %% Normalize and run through sigmoid
 normalizedDepth2 = normalize(depth);
-normalizedDepth2 = remapInterpolation(normalizedDepth2,2 , 1);
+normalizedDepth2 = remapInterpolation(normalizedDepth2,1 , 1.6);
 figure; imshow(normalizedDepth2);
-depth = repmat(normalizedDepth2, [1,1,3]);
+depth2 = repmat(normalizedDepth2, [1,1,3]);
 
 end
 

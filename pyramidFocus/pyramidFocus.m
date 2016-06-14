@@ -43,7 +43,7 @@ depthMap3 = depthForTripleFocus(img1, img2);
         fprintf ( 1, '  MY_PROGRAM took %f seconds to run.\n', wtime );
 
 %%
-% depthMap3 = depth4;
+depthMap3 = depth2;
 tic
 finalImageCombined = zeros(size(img1));
 mapSoFar = zeros(size(img1));
@@ -95,39 +95,39 @@ for i = 0: 0.1: 0.9
         finalImageCombined(~mapSoFar) = 0;
         finalImageCombined(isnan(finalImageCombined)) = 0;
         
-    else
-        for highLightIndex = 0.3 : 0.3 : 0.6
-            lastIndex = depthMap3(:,:,1) > highLightIndex - 0.3 & depthMap3(:,:,1) < highLightIndex;
-        lastIndex = repmat(lastIndex, [1,1,3]);
-        currentImage = img1;
-        currentImage(~lastIndex) = 0;
-        
-        currentLum = imgLum;
-        currentLum(~lastIndex) = 0;
-        luminanceArea = currentImage;
-        luminanceArea(currentLum<=0.90) = 0;
-        lumMask = medfilt2(imgradient(luminanceArea(:,:,1)));
-        if (highLightIndex == 0.3)
-            kernelSize = 15;
-            highLightFactor = 0.95;
-        else
-            kernelSize = 10;
-            highLightFactor = 0.95;
-        end
-        img1Squared = img1.*img1;
-        pentKernelHigh = imresize(pentKernelOriginal,[kernelSize kernelSize]);
-        pentKernelHigh = pentKernelHigh./(sum(sum(pentKernelHigh)));
-        luminanceArea(:,:,1) = conv2(lumMask.*img1Squared(:,:,1),pentKernelHigh,'same');
-        luminanceArea(:,:,2) = conv2(lumMask.*img1Squared(:,:,2),pentKernelHigh,'same');
-        luminanceArea(:,:,3) = conv2(lumMask.*img1Squared(:,:,3),pentKernelHigh,'same');
-        luminanceArea = luminanceArea.^(1/2);
-        luminanceAdd = luminanceArea;
-        luminanceAdd(isnan(luminanceAdd)) = 0;
-        luminanceAdd(luminanceAdd>1) = 1;
-%         luminanceAdd = luminanceAdd.*1.5;
-        finalImageCombined = finalImageCombined -luminanceAdd.*finalImageCombined + luminanceAdd.*highLightFactor;
-        end
-        
+%     else
+%         for highLightIndex = 0.3 : 0.3 : 0.6
+%             lastIndex = depthMap3(:,:,1) > highLightIndex - 0.3 & depthMap3(:,:,1) < highLightIndex;
+%         lastIndex = repmat(lastIndex, [1,1,3]);
+%         currentImage = img1;
+%         currentImage(~lastIndex) = 0;
+%         
+%         currentLum = imgLum;
+%         currentLum(~lastIndex) = 0;
+%         luminanceArea = currentImage;
+%         luminanceArea(currentLum<=0.90) = 0;
+%         lumMask = medfilt2(imgradient(luminanceArea(:,:,1)));
+%         if (highLightIndex == 0.3)
+%             kernelSize = 15;
+%             highLightFactor = 0.95;
+%         else
+%             kernelSize = 10;
+%             highLightFactor = 0.95;
+%         end
+%         img1Squared = img1.*img1;
+%         pentKernelHigh = imresize(pentKernelOriginal,[kernelSize kernelSize]);
+%         pentKernelHigh = pentKernelHigh./(sum(sum(pentKernelHigh)));
+%         luminanceArea(:,:,1) = conv2(lumMask.*img1Squared(:,:,1),pentKernelHigh,'same');
+%         luminanceArea(:,:,2) = conv2(lumMask.*img1Squared(:,:,2),pentKernelHigh,'same');
+%         luminanceArea(:,:,3) = conv2(lumMask.*img1Squared(:,:,3),pentKernelHigh,'same');
+%         luminanceArea = luminanceArea.^(1/2);
+%         luminanceAdd = luminanceArea;
+%         luminanceAdd(isnan(luminanceAdd)) = 0;
+%         luminanceAdd(luminanceAdd>1) = 1;
+% %         luminanceAdd = luminanceAdd.*1.5;
+%         finalImageCombined = finalImageCombined -luminanceAdd.*finalImageCombined + luminanceAdd.*highLightFactor;
+%         end
+%         
     end
 %     figure(7);
 %     ax1=subplot(1,2,1);
